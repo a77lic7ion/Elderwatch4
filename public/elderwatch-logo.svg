@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <clipPath id="circle">
+      <circle cx="100" cy="100" r="95"/>
+    </clipPath>
+  </defs>
+  
+  <!-- Outer circle -->
+  <circle cx="100" cy="100" r="98" fill="none" stroke="white" stroke-width="4"/>
+  <circle cx="100" cy="100" r="95" fill="#1A221E"/>
+  
+  <!-- Sky gradient -->
+  <circle cx="100" cy="100" r="95" clip-path="url(#circle)">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1A221E"/>
+        <stop offset="40%" stop-color="#2D1B0E"/>
+        <stop offset="70%" stop-color="#D46A00"/>
+        <stop offset="85%" stop-color="#FF8C00"/>
+        <stop offset="100%" stop-color="#FFB347"/>
+      </linearGradient>
+    </defs>
+    <rect x="5" y="5" width="190" height="190" fill="url(#sky)"/>
+  </circle>
+  
+  <!-- Rolling hills -->
+  <ellipse cx="100" cy="180" rx="120" ry="45" fill="#2D5A27"/>
+  <ellipse cx="60" cy="175" rx="80" ry="35" fill="#3D7A37"/>
+  <ellipse cx="140" cy="178" rx="70" ry="30" fill="#4A8A44"/>
+  
+  <!-- Sun rays -->
+  <g opacity="0.6">
+    <polygon points="100,85 30,160 45,145" fill="#FFB347"/>
+    <polygon points="100,85 60,170 75,155" fill="#FFB347"/>
+    <polygon points="100,85 90,175 105,160" fill="#FFB347"/>
+    <polygon points="100,85 120,170 135,155" fill="#FFB347"/>
+    <polygon points="100,85 150,160 165,145" fill="#FFB347"/>
+    <polygon points="100,85 170,140 180,125" fill="#FFB347"/>
+    <polygon points="100,85 30,140 20,125" fill="#FFB347"/>
+  </g>
+  
+  <!-- Tree trunk -->
+  <rect x="92" y="100" width="16" height="75" fill="#1A221E" rx="3"/>
+  
+  <!-- Tree canopy -->
+  <ellipse cx="100" cy="70" rx="55" ry="45" fill="#1A221E"/>
+  <ellipse cx="70" cy="80" rx="30" ry="25" fill="#1A221E"/>
+  <ellipse cx="130" cy="80" rx="30" ry="25" fill="#1A221E"/>
+  <ellipse cx="100" cy="55" rx="40" ry="30" fill="#1A221E"/>
+  <ellipse cx="80" cy="65" rx="25" ry="20" fill="#1A221E"/>
+  <ellipse cx="120" cy="65" rx="25" ry="20" fill="#1A221E"/>
+  
+  <!-- Checkmark circle -->
+  <circle cx="100" cy="120" r="22" fill="#157A4C" stroke="#4CAF50" stroke-width="3"/>
+  <path d="M90 120 L97 127 L112 112" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Text -->
+  <text x="100" y="195" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="bold" letter-spacing="0.5">ElderWatch</text>
+</svg>

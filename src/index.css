@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #121815;
+  --paper-2: #1A221E;
+  --paper-3: #232D28;
+  --ink: #F2EEE5;
+  --ink-2: #B3BDB6;
+  --line: #2C3631;
+  --ok: #3DB578;
+  --ok-deep: #2E9A63;
+  --ok-tint: #173226;
+  --ok-ink: #D7F3E3;
+  --ok-line: rgba(61, 181, 120, 0.4);
+  --ok-shadow: rgba(61, 181, 120, 0.25);
+  --on-ok: #06170E;
+  --help: #E8604F;
+  --help-deep: #D04A3A;
+  --help-tint: #3A1712;
+  --help-ink: #FBDAD4;
+  --help-line: rgba(232, 96, 79, 0.4);
+  --help-shadow: rgba(232, 96, 79, 0.25);
+  --on-help: #2A0905;
+  --jac: #A597E6;
+  --jac-tint: #2A2540;
+  --sun: #F0BA55;
+  --sun-tint: #3A2E14;
+  --sun-wash: rgba(240, 186, 85, 0.10);
+  --bezel-a: #1C201E;
+  --bezel-b: #060807;
+  --bezel-edge: rgba(255, 255, 255, 0.07);
+  --bezel-shadow: 0 48px 90px -30px rgba(0, 0, 0, 0.8), 0 18px 36px -18px rgba(0, 0, 0, 0.6);
+  --glow: rgba(240, 186, 85, 0.07);
+  --scale: 1;
+}
+
+/* Night: explicit toggle override matching default root */
+:root[data-night="on"] {
+  --paper: #121815;
+  --paper-2: #1A221E;
+  --paper-3: #232D28;
+  --ink: #F2EEE5;
+  --ink-2: #B3BDB6;
+  --line: #2C3631;
+  --ok: #3DB578;
+  --ok-deep: #2E9A63;
+  --ok-tint: #173226;
+  --ok-ink: #D7F3E3;
+  --ok-line: rgba(61, 181, 120, 0.4);
+  --ok-shadow: rgba(61, 181, 120, 0.25);
+  --on-ok: #06170E;
+  --help: #E8604F;
+  --help-deep: #D04A3A;
+  --help-tint: #3A1712;
+  --help-ink: #FBDAD4;
+  --help-line: rgba(232, 96, 79, 0.4);
+  --help-shadow: rgba(232, 96, 79, 0.25);
+  --on-help: #2A0905;
+  --jac: #A597E6;
+  --jac-tint: #2A2540;
+  --sun: #F0BA55;
+  --sun-tint: #3A2E14;
+  --sun-wash: rgba(240, 186, 85, 0.10);
+  --bezel-a: #1C201E;
+  --bezel-b: #060807;
+  --bezel-edge: rgba(255, 255, 255, 0.07);
+  --bezel-shadow: 0 48px 90px -30px rgba(0, 0, 0, 0.8), 0 18px 36px -18px rgba(0, 0, 0, 0.6);
+  --glow: rgba(240, 186, 85, 0.07);
+}
+
+/* Light: toggle support */
+:root[data-night="off"] {
+  --paper: #F8F5EF;
+  --paper-2: #EFEAE0;
+  --paper-3: #E6E0D3;
+  --ink: #17201B;
+  --ink-2: #4A5850;
+  --line: #D9D2C4;
+  --ok: #157A4C;
+  --ok-deep: #0E5C38;
+  --ok-tint: #E3F1E8;
+  --ok-ink: #0B3D26;
+  --ok-line: rgba(21, 122, 76, 0.32);
+  --ok-shadow: rgba(21, 122, 76, 0.38);
+  --on-ok: #FFFFFF;
+  --help: #B8321F;
+  --help-deep: #8C2416;
+  --help-tint: #F9E4E0;
+  --help-ink: #5C170E;
+  --help-line: rgba(184, 50, 31, 0.32);
+  --help-shadow: rgba(184, 50, 31, 0.36);
+  --on-help: #FFFFFF;
+  --jac: #6A58B5;
+  --jac-tint: #ECE8F7;
+  --sun: #E9A93A;
+  --sun-tint: #FBF0D6;
+  --sun-wash: rgba(233, 169, 58, 0.16);
+  --bezel-a: #2A2E2C;
+  --bezel-b: #0F1211;
+  --bezel-edge: rgba(255, 255, 255, 0.10);
+  --bezel-shadow: 0 48px 90px -30px rgba(23, 32, 27, 0.55), 0 18px 36px -18px rgba(23, 32, 27, 0.35);
+  --glow: rgba(233, 169, 58, 0.14);
+}
+
+body {
+  font-family: "Atkinson Hyperlegible", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  color: var(--ink);
+  background-color: var(--paper-2);
+  line-height: 1.5;
+}
+
+.font-display {
+  font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", sans-serif;
+}
+
+@keyframes flashfade {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  68% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes flashdraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.flash-play {
+  animation: flashfade 1000ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.flash-play svg path {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: flashdraw 480ms 90ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}

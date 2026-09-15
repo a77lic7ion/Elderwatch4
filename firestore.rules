@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // System connection test doc
+    match /system/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Homes collection
+    match /homes/{homeId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Staff collection
+    match /staff/{staffId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Residents roster collection
+    match /residents/{residentId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Daily check-ins collection
+    match /checkins/{checkinId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Job logs collection
+    match /jobLogs/{logId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Push logs collection
+    match /pushLogs/{logId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Device bindings collection
+    match /device_bindings/{bindingId} {
+      allow read, write: if true;
+    }
+  }
+}

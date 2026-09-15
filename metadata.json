@@ -1,0 +1,6 @@
+{
+  "name": "ElderWatch",
+  "description": "Daily wellness check-in Progressive Web App for frailcare and retirement homes with 1-tap resident terminal and live staff triage dashboard.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

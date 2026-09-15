@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElderWatch — Simple Daily Wellness Check-in for Frailcare</title>
+  <meta name="description" content="One tap tells you a resident is okay. No tap tells you they need a visit. Simple, reliable daily wellness check-in for frailcare and retirement homes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ew-dark: #1A221E;
+      --ew-darker: #121815;
+      --ew-green: #157A4C;
+      --ew-green-light: #22C55E;
+      --ew-green-glow: rgba(21, 122, 76, 0.4);
+      --ew-cream: #F7FAFC;
+      --ew-red: #DC2626;
+      --ew-amber: #F59E0B;
+      --ew-slate-50: #F8FAFC;
+      --ew-slate-100: #F1F5F9;
+      --ew-slate-200: #E2E8F0;
+      --ew-slate-400: #94A3B8;
+      --ew-slate-600: #475569;
+      --ew-slate-700: #334155;
+      --ew-slate-800: #1E293B;
+      --ew-slate-900: #0F172A;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --radius-lg: 28px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--ew-slate-800);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(165deg, var(--ew-darker) 0%, var(--ew-dark) 50%, #0D1A14 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(21, 122, 76, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(21, 122, 76, 0.15);
+      border: 1px solid rgba(21, 122, 76, 0.3);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ew-green-light);
+      margin-bottom: 32px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ew-green-light);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero-logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+    }
+
+    .hero-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .hero h1 {
+      color: white;
+      font-size: clamp(36px, 6vw, 64px);
+      max-width: 700px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--ew-green-light) 0%, #4ADE80 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      color: var(--ew-slate-400);
+      font-size: 18px;
+      max-width: 520px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--ew-green);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      box-shadow: 0 8px 32px var(--ew-green-glow);
+      transition: all 0.3s ease;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px var(--ew-green-glow);
+    }
+
+    /* ===== PHONE MOCKUP ===== */
+    .phone-showcase {
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+    }
+
+    .phone {
+      width: 280px;
+      background: var(--ew-dark);
+      border-radius: 36px;
+      padding: 20px 16px;
+      box-shadow: 
+        0 0 0 8px #2A3530,
+        0 32px 64px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .phone-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .phone-header img {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+    }
+
+    .phone-header span {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: white;
+    }
+
+    .phone-lang {
+      margin-left: auto;
+      display: flex;
+      gap: 4px;
+    }
+
+    .phone-lang button {
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .phone-lang .active {
+      background: var(--ew-green);
+      color: white;
+    }
+
+    .phone-lang .inactive {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+    }
+
+    .phone-greeting {
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .phone-location {
+      color: var(--ew-slate-400);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .phone-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .phone-btn {
+      border-radius: 18px;
+      padding: 28px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .phone-btn.ok {
+      background: var(--ew-green);
+      box-shadow: 0 8px 24px var(--ew-green-glow);
+    }
+
+    .phone-btn.help {
+      background: var(--ew-red);
+      box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+    }
+
+    .phone-btn svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .phone-btn .label {
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .phone-btn .sub {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+    }
+
+    /* ===== PROBLEM SECTION ===== */
+    .problem {
+      background: white;
+      padding: 100px 24px;
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .problem-card {
+      border-radius: var(--radius);
+      padding: 32px;
+      border: 1px solid var(--ew-slate-200);
+    }
+
+    .problem-card.old {
+      background: var(--ew-slate-50);
+    }
+
+    .problem-card.new {
+      background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+      border-color: #A7F3D0;
+    }
+
+    .problem-card .tag {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .problem-card.old .tag {
+      color: var(--ew-slate-600);
+    }
+
+    .problem-card.new .tag {
+      color: var(--ew-green);
+    }
+
+    .problem-card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .problem-card p {
+      color: var(--ew-slate-600);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .how-it-works {
+      background: var(--ew-slate-50);
+      padding: 100px 24px;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 56px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      color: var(--ew-slate-600);
+      font-size: 18px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .step {
+      background: white;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      border: 1px solid var(--ew-slate-200);
+      position: relative;
+    }
+
+    .step-num {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--ew-dark);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .step h3 {
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      color: var(--ew-slate-600);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ===== STAFF DASHBOARD ===== */
+    .staff-section {
+      background: linear-gradient(165deg, var(--ew-slate-900) 0%, var(--ew-dark) 100%);
+      padding: 100px 24px;
+      color: white;
+    }
+
+    .staff-section h2 {
+      color: white;
+    }
+
+    .staff-section .section-header p {
+      color: var(--ew-slate-400);
+    }
+
+    .staff-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 48px;
+      align-items: center;
+      margin-top: 48px;
+    }
+
+    .staff-features {
+      list-style: none;
+    }
+
+    .staff-features li {
+      padding: 16px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 16px;
+      color: var(--ew-slate-400);
+    }
+
+    .staff-features li:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .staff-features li::before {
+      content: '✓';
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(21, 122, 76, 0.2);
+      color: var(--ew-green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Dashboard mockup */
+    .dashboard-mock {
+      background: white;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    }
+
+    .dash-header {
+      background: var(--ew-dark);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dash-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dash-brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .dash-brand span {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      color: white;
+    }
+
+    .dash-home {
+      background: rgba(255,255,255,0.1);
+      color: var(--ew-slate-400);
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .dash-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 20px;
+    }
+
+    .dash-stat {
+      border: 1px solid var(--ew-slate-200);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .dash-stat.ok {
+      background: #ECFDF5;
+      border-color: #A7F3D0;
+    }
+
+    .dash-stat.help {
+      background: #FEF2F2;
+      border-color: #FECACA;
+    }
+
+    .dash-stat.awaiting {
+      background: var(--ew-slate-50);
+    }
+
+    .dash-stat .label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ew-slate-600);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .dash-stat .value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      margin-top: 4px;
+    }
+
+    .dash-stat.ok .value { color: #059669; }
+    .dash-stat.help .value { color: var(--ew-red); }
+    .dash-stat.awaiting .value { color: var(--ew-slate-600); }
+
+    .dash-residents {
+      padding: 0 20px 20px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .dash-resident {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--ew-slate-200);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .dash-resident .info h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .dash-resident .info span {
+      font-size: 12px;
+      color: var(--ew-slate-400);
+    }
+
+    .dash-resident .status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    .dash-resident .status.ok {
+      background: #ECFDF5;
+      color: #059669;
+    }
+
+    .dash-resident .status.help {
+      background: #FEF2F2;
+      color: var(--ew-red);
+    }
+
+    .dash-resident .status.awaiting {
+      background: var(--ew-slate-100);
+      color: var(--ew-slate-600);
+    }
+
+    /* ===== FEATURES ===== */
+    .features {
+      background: white;
+      padding: 100px 24px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .feature-card {
+      padding: 32px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ew-slate-200);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--ew-green);
+      box-shadow: 0 8px 32px rgba(21, 122, 76, 0.1);
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .feature-icon svg {
+      width: 24px;
+      height: 24px;
+      color: var(--ew-green);
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--ew-slate-600);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+      background: linear-gradient(165deg, var(--ew-darker) 0%, var(--ew-dark) 100%);
+      padding: 100px 24px;
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      color: white;
+      font-size: clamp(32px, 5vw, 48px);
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+
+    .cta-section p {
+      color: var(--ew-slate-400);
+      font-size: 18px;
+      max-width: 480px;
+      margin: 0 auto 40px;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .cta-btn.primary {
+      background: var(--ew-green);
+      color: white;
+      box-shadow: 0 8px 32px var(--ew-green-glow);
+    }
+
+    .cta-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px var(--ew-green-glow);
+    }
+
+    .cta-btn.secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .cta-btn.secondary:hover {
+      border-color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--ew-darker);
+      padding: 40px 24px;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .footer-logo img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .footer-logo span {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: white;
+    }
+
+    footer p {
+      color: var(--ew-slate-400);
+      font-size: 14px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .problem-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .staff-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero {
+        padding: 48px 20px 60px;
+        min-height: auto;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .hero-sub {
+        font-size: 16px;
+      }
+
+      .phone {
+        width: 260px;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .dash-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">Live Now in South Africa</div>
+    
+    <div class="hero-logo">
+      <img src="https://elderwatch3.vercel.app/elderwatch-logo.png" alt="ElderWatch Logo">
+    </div>
+
+    <h1>Daily check-in your residents can <span>actually use</span></h1>
+    <p class="hero-sub">One tap tells you a resident is okay. No tap by a set time tells you they need a visit — automatically.</p>
+    
+    <div class="cta-buttons hero-cta-stack">
+      <a href="https://wa.me/27724123856" class="cta-btn primary" style="font-size: 18px; padding: 18px 36px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        Start a Free Trial
+      </a>
+      <a href="mailto:Peter.e.vosloo@gmail.com" class="cta-btn secondary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
+        Email Us
+      </a>
+    </div>
+
+    <!-- Phone Mockup: interactive resident demo -->
+    <div class="phone-showcase">
+<!-- ===================================================================
+     ElderWatch — interactive resident-screen demo (self-contained block)
+     Drop-in: markup + styles + script, no dependencies, no persistence,
+     so a page reload always starts again at the language selection.
+     =================================================================== -->
+<!-- EW-DEMO:START -->
+<!-- ===================================================================
+     ElderWatch — interactive resident-screen demo (self-contained block)
+     Drop-in: markup + styles + script, no dependencies, no persistence,
+     so a page reload always starts again at the language selection.
+     =================================================================== -->
+<div class="ewd" id="ewd">
+  <div class="ewd-steps" aria-hidden="true">
+    <span class="ewd-step" data-step="1"><b>1</b> Choose language</span>
+    <span class="ewd-step" data-step="2"><b>2</b> Daily check-in</span>
+    <span class="ewd-step" data-step="3"><b>3</b> Confirmation</span>
+    <span class="ewd-step" data-step="4"><b>4</b> 08:00 reminder</span>
+  </div>
+
+  <div class="ewd-phone">
+    <div class="ewd-screen" id="ewd-screen">
+
+      <!-- OS-style notification (the 08:00 reminder) -->
+      <div class="ewd-toast" id="ewd-toast" role="button" tabindex="0" aria-label="Open the reminder">
+        <div class="ewd-toast-top">
+          <span class="ewd-toast-app">
+            <span class="ewd-mark ewd-mark-sm"><img src="https://elderwatch3.vercel.app/elderwatch-logo.png" alt="" onerror="this.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+            ElderWatch
+          </span>
+          <span class="ewd-toast-time">08:00</span>
+        </div>
+        <div class="ewd-toast-title" id="ewd-toast-title">Reminder</div>
+        <div class="ewd-toast-body" id="ewd-toast-body">Good morning Grace. Please tap the green button to let the sisters know you are OK.</div>
+      </div>
+
+      <!-- flash overlay -->
+      <div class="ewd-flash" id="ewd-flash">
+        <svg class="ewd-flash-icon" id="ewd-flash-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 25l10 10 18-22"/></svg>
+      </div>
+
+      <!-- VIEW 1: language selection (where the demo always starts) -->
+      <div class="ewd-view is-on" data-view="lang">
+        <div class="ewd-lang-head">
+          <span class="ewd-mark ewd-mark-lg"><img src="https://elderwatch3.vercel.app/elderwatch-logo.png" alt="" onerror="this.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+          <span class="ewd-wordmark">ElderWatch</span>
+        </div>
+        <h3 class="ewd-lang-title">Welcome, Grace.</h3>
+        <p class="ewd-lang-sub">Tap the green button every morning.</p>
+        <p class="ewd-ask" id="ewd-lang-ask">Choose your language</p>
+        <p class="ewd-ask-sub" id="ewd-lang-ask-sub">Kies jou taal</p>
+        <button class="ewd-lang-btn is-primary" data-ewd="lang" data-lang="en">English</button>
+        <button class="ewd-lang-btn" data-ewd="lang" data-lang="af">Afrikaans</button>
+      </div>
+
+      <!-- VIEW 2: the main check-in screen -->
+      <div class="ewd-view" data-view="main">
+        <div class="ewd-head">
+          <span class="ewd-head-brand">
+            <span class="ewd-mark ewd-mark-sm"><img src="https://elderwatch3.vercel.app/elderwatch-logo.png" alt="" onerror="this.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+            <span class="ewd-head-word">ElderWatch</span>
+          </span>
+          <span class="ewd-lang-toggle">
+            <button class="is-on" data-ewd="toggle-lang" data-lang="en">EN</button>
+            <button data-ewd="toggle-lang" data-lang="af">AF</button>
+          </span>
+        </div>
+
+        <div class="ewd-greet" id="ewd-greet">Good morning, Grace</div>
+        <div class="ewd-place">Room 12 · Willow Cottage</div>
+
+        <!-- reminder option (the 08:00 timer notification) -->
+        <button class="ewd-remind" data-ewd="remind">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span id="ewd-remind-label">Daily reminders are OFF — tap to turn on</span>
+        </button>
+
+        <div class="ewd-actions">
+          <button class="ewd-btn ok" data-ewd="ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-7"/></svg>
+            <span class="ewd-label" data-t="okLabel">I'm OK</span>
+            <span class="ewd-sub" data-t="okSub">Tap once. The sisters will know.</span>
+          </button>
+          <button class="ewd-btn help" data-ewd="help">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V5.5a1.5 1.5 0 013 0V11"/><path d="M10 10V4.5a1.5 1.5 0 013 0V10"/><path d="M13 10.5V5.5a1.5 1.5 0 013 0v6"/><path d="M16 12.5V8a1.5 1.5 0 013 0v6.5A6.5 6.5 0 0112.5 21H11a5 5 0 01-4.2-2.3L4 14.5a1.6 1.6 0 012.6-1.9L7 13.5"/></svg>
+            <span class="ewd-label" data-t="helpLabel">I need help</span>
+            <span class="ewd-sub" data-t="helpSub">A sister will come to you.</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 3: checked in -->
+      <div class="ewd-view" data-view="ok">
+        <div class="ewd-result green">
+          <h3 id="ewd-ok-title">Thank you, Grace.</h3>
+          <p id="ewd-ok-body">Sister knows you're up. Have a lovely day.</p>
+          <p class="ewd-stamp" id="ewd-ok-time">Checked in at 06:01</p>
+        </div>
+        <button class="ewd-btn help ewd-btn-compact" data-ewd="help">
+          <span class="ewd-label" data-t="helpLabel">I need help</span>
+        </button>
+      </div>
+
+      <!-- VIEW 4: help requested -->
+      <div class="ewd-view" data-view="help">
+        <div class="ewd-result red">
+          <h3 id="ewd-help-title">Help is on its way.</h3>
+          <p id="ewd-help-body">Sister has been told.</p>
+          <p class="ewd-stamp" id="ewd-help-time">Sent at 06:01</p>
+          <button class="ewd-pill-btn" data-ewd="imfine" id="ewd-imfine">I'm fine after all</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="ewd-note" id="ewd-note">Tap the buttons — this is the real resident flow. It always starts again from here when the page is reloaded.</p>
+
+  <div class="ewd-controls">
+    <button class="ewd-ctl" data-ewd="notify">Show the 08:00 reminder</button>
+    <button class="ewd-ctl" data-ewd="play">Play the whole flow</button>
+    <button class="ewd-ctl" data-ewd="restart">Restart</button>
+  </div>
+</div>
+
+<style>
+  /* ---------- resident demo (scoped to .ewd) ---------- */
+  .ewd { --ewd-green: #157A4C; --ewd-red: #C53030; --ewd-screen: #1A221E; --ewd-ink: #F7FAFC;
+         display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+  .ewd *, .ewd *::before, .ewd *::after { box-sizing: border-box; }
+
+  .ewd-steps { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .ewd-step { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+              font: 600 11px/1.2 'Inter', system-ui, -apple-system, sans-serif; letter-spacing: .03em;
+              text-transform: uppercase; color: #94A3B8; border: 1px solid rgba(148,163,184,.35);
+              transition: all .2s ease; }
+  .ewd-step b { font-weight: 800; opacity: .7; }
+  .ewd-step.is-on { color: #fff; background: var(--ewd-green); border-color: var(--ewd-green); }
+  .ewd-step.is-past { color: var(--ewd-green); border-color: rgba(21,122,76,.45); }
+
+  .ewd-phone { position: relative; width: 100%; max-width: 300px; padding: 9px; border-radius: 40px;
+               background: linear-gradient(180deg, #1c2420, #0b0f0d);
+               border: 1px solid rgba(255,255,255,.12);
+               box-shadow: 0 0 0 8px #2A3530, 0 32px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1); }
+  .ewd-screen { position: relative; overflow: hidden; border-radius: 32px; background: var(--ewd-screen);
+                color: var(--ewd-ink); min-height: 476px; display: flex; flex-direction: column;
+                font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+  .ewd-view { display: none; flex: 1; flex-direction: column; padding: 16px; }
+  .ewd-view.is-on { display: flex; }
+
+  /* header */
+  .ewd-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 18px; }
+  .ewd-head-brand { display: inline-flex; align-items: center; gap: 8px; }
+  .ewd-head-word { font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
+  .ewd-mark { position: relative; display: inline-grid; place-items: center; border-radius: 50%;
+              background: #121815; color: #fff; overflow: hidden; flex: none; }
+  .ewd-mark svg { width: 62%; height: 62%; }
+  .ewd-mark img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .ewd-mark-sm { width: 26px; height: 26px; }
+  .ewd-mark-lg { width: 46px; height: 46px; }
+
+  .ewd-lang-toggle { display: inline-flex; padding: 2px; border-radius: 9px; background: rgba(255,255,255,.1); }
+  .ewd-lang-toggle button { border: 0; border-radius: 7px; padding: 5px 10px; cursor: pointer;
+                            font: 800 11px/1 'Inter', system-ui, sans-serif; background: transparent;
+                            color: rgba(255,255,255,.6); transition: all .15s ease; }
+  .ewd-lang-toggle button.is-on { background: var(--ewd-green); color: #fff; }
+
+  /* language screen */
+  .ewd-lang-head { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 22px 0 26px; }
+  .ewd-wordmark { font-size: 21px; font-weight: 800; letter-spacing: -.02em; }
+  .ewd-lang-title { margin: 0; font-size: 22px; font-weight: 800; text-align: center; }
+  .ewd-lang-sub { margin: 8px 0 22px; font-size: 13.5px; text-align: center; color: rgba(247,250,252,.65); }
+  .ewd-ask { margin: 0; text-align: center; font-size: 15px; font-weight: 700; }
+  .ewd-ask-sub { margin: 3px 0 18px; text-align: center; font-size: 12.5px; color: rgba(247,250,252,.55); }
+  .ewd-lang-btn { width: 100%; margin-bottom: 10px; padding: 15px; border-radius: 16px; cursor: pointer;
+                  font: 700 16px/1 'Inter', system-ui, sans-serif; color: #fff;
+                  background: transparent; border: 2px solid rgba(255,255,255,.28); transition: all .15s ease; }
+  .ewd-lang-btn.is-primary { background: var(--ewd-green); border-color: var(--ewd-green);
+                             box-shadow: 0 8px 22px -8px rgba(21,122,76,.7); }
+  .ewd-lang-btn:hover { border-color: rgba(255,255,255,.5); }
+  .ewd-lang-btn.is-primary:hover { border-color: var(--ewd-green); }
+
+  /* main screen */
+  .ewd-greet { font-size: 21px; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; }
+  .ewd-place { margin: 4px 0 14px; font-size: 12.5px; color: rgba(247,250,252,.6); }
+
+  .ewd-remind { display: flex; align-items: center; gap: 9px; width: 100%; margin-bottom: 14px; padding: 9px 11px;
+                border-radius: 12px; cursor: pointer; text-align: left;
+                font: 700 11.5px/1.35 'Inter', system-ui, sans-serif;
+                background: rgba(236,201,75,.16); border: 1.5px solid rgba(236,201,75,.85); color: #ECC94B;
+                transition: all .18s ease; }
+  .ewd-remind svg { width: 16px; height: 16px; flex: none; }
+  .ewd-remind.is-on { background: rgba(21,122,76,.22); border-color: var(--ewd-green); color: #6EE7A8; }
+
+  .ewd-actions { flex: 1; display: flex; flex-direction: column; gap: 11px; min-height: 0; }
+  .ewd-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+             border: 0; border-radius: 22px; cursor: pointer; padding: 16px 14px; color: #fff;
+             font-family: inherit; transition: transform .12s ease, filter .12s ease; }
+  .ewd-btn:active { transform: scale(.985); }
+  .ewd-btn.ok { flex: 3; background: var(--ewd-green); box-shadow: 0 10px 26px -12px rgba(21,122,76,.9); }
+  .ewd-btn.help { flex: 2; background: var(--ewd-red); box-shadow: 0 10px 26px -12px rgba(197,48,48,.9); }
+  .ewd-btn-compact { flex: none !important; padding: 18px; }
+  .ewd-btn svg { width: 34px; height: 34px; }
+  .ewd-label { font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+  .ewd-sub { font-size: 12px; opacity: .92; }
+  .ewd-btn.is-hit { filter: brightness(1.25); }
+
+  /* confirmations */
+  .ewd-result { display: flex; flex-direction: column; gap: 9px; flex: 1; padding: 16px; border-radius: 20px; }
+  .ewd-result.green { background: rgba(21,122,76,.16); border: 2px solid var(--ewd-green); }
+  .ewd-result.red { background: rgba(197,48,48,.16); border: 2px solid var(--ewd-red); }
+  .ewd-result h3 { margin: 0; font-size: 21px; font-weight: 800; line-height: 1.15; }
+  .ewd-result.green h3 { color: #6EE7A8; }
+  .ewd-result.red h3 { color: #FCA5A5; }
+  .ewd-result p { margin: 0; font-size: 14px; color: rgba(247,250,252,.85); }
+  .ewd-stamp { margin-top: auto !important; font-size: 12.5px !important; color: rgba(247,250,252,.6) !important; }
+  .ewd-pill-btn { align-self: flex-start; margin-top: 6px; padding: 10px 18px; border: 0; border-radius: 999px;
+                  background: var(--ewd-green); color: #fff; cursor: pointer;
+                  font: 800 13px/1 'Inter', system-ui, sans-serif; box-shadow: 0 8px 20px -10px rgba(21,122,76,.9); }
+
+  /* flash */
+  .ewd-flash { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; pointer-events: none;
+               transition: opacity .14s ease; z-index: 4; color: #fff; }
+  .ewd-flash.is-on { opacity: 1; }
+  .ewd-flash.green { background: var(--ewd-green); }
+  .ewd-flash.red { background: var(--ewd-red); }
+  .ewd-flash-icon { width: 116px; height: 116px; }
+  .ewd-flash.red .ewd-flash-icon { width: 92px; height: 92px; }
+
+  /* notification toast */
+  .ewd-toast { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 6; padding: 10px 12px;
+               border-radius: 16px; background: rgba(255,255,255,.98); color: #0F172A;
+               box-shadow: 0 14px 34px rgba(0,0,0,.4); cursor: pointer;
+               transform: translateY(-150%); transition: transform .38s cubic-bezier(.22,1,.36,1);
+               font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .ewd-toast.is-on { transform: translateY(0); }
+  .ewd-toast-top { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+                   font-size: 11px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; color: #64748B; }
+  .ewd-toast-app { display: inline-flex; align-items: center; gap: 6px; }
+  .ewd-toast-app .ewd-mark { background: #0F172A; }
+  .ewd-toast-title { margin-top: 4px; font-size: 13.5px; font-weight: 800; }
+  .ewd-toast-body { margin-top: 2px; font-size: 12.5px; line-height: 1.35; color: #334155; }
+
+  .ewd-note { margin: 0; max-width: 320px; text-align: center; font: 500 12.5px/1.45 'Inter', system-ui, sans-serif;
+              color: #FFFFFF; }
+
+  .ewd-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .ewd-ctl { padding: 9px 15px; border-radius: 999px; cursor: pointer; color: #FFFFFF;
+             font: 700 12px/1 'Inter', system-ui, -apple-system, sans-serif;
+             background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.35); transition: all .15s ease; }
+  .ewd-ctl:hover { background: rgba(255,255,255,.20); }
+
+  @media (max-width: 420px) {
+    .ewd-screen { min-height: 440px; }
+    .ewd-label { font-size: 22px; }
+    .ewd-step { font-size: 10px; padding: 5px 9px; }
+  }
+
+  /* --- legal footer (copyright / patent notice) --- */
+  footer .legal { margin-top: 18px; font-size: 12.5px; font-weight: 600; opacity: .92; }
+  footer .legal-sub { margin: 6px auto 0; max-width: 680px; font-size: 11.5px; line-height: 1.55; opacity: .72; }
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('ewd');
+  if (!root || root.dataset.ewdBound) return;      // never bind twice
+  root.dataset.ewdBound = '1';
+
+  var COPY = {
+    en: {
+      locale: 'en-ZA',
+      hello: function (h) { return h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : 'Good evening,'; },
+      greetName: 'Grace',
+      okLabel: "I'm OK", okSub: 'Tap once. The sisters will know.',
+      helpLabel: 'I need help', helpSub: 'A sister will come to you.',
+      okTitle: 'Thank you, Grace.', okBody: "Sister knows you're up. Have a lovely day.",
+      okTime: function (t) { return 'Checked in at ' + t; },
+      helpTitle: 'Help is on its way.', helpBody: 'Sister has been told.',
+      helpTime: function (t) { return 'Sent at ' + t; },
+      imfine: "I'm fine after all", remindOff: 'Daily reminders are OFF — tap to turn on',
+      remindOn: 'Reminders on · 08:00 every morning',
+      notifTitle: 'Reminder',
+      notifBody: 'Good morning Grace. Please tap the green button to let the sisters know you are OK.'
+    },
+    af: {
+      locale: 'af-ZA',
+      hello: function (h) { return h < 12 ? 'Goeie môre,' : h < 17 ? 'Goeie middag,' : 'Goeienaand,'; },
+      greetName: 'Grace',
+      okLabel: 'Ek is reg', okSub: 'Tik een keer. Suster sal weet.',
+      helpLabel: 'Ek het hulp nodig', helpSub: 'Suster sal kom.',
+      okTitle: 'Dankie, Grace.', okBody: 'Suster weet jy is op. Geniet jou dag.',
+      okTime: function (t) { return 'Ingeteken om ' + t; },
+      helpTitle: 'Hulp is oppad.', helpBody: 'Suster is in kennis gestel.',
+      helpTime: function (t) { return 'Gestuur om ' + t; },
+      imfine: 'Ek is tog reg', remindOff: 'Daaglikse herinnerings is AF — tik om aan te skakel',
+      remindOn: 'Herinnerings aan · 08:00 elke oggend',
+      notifTitle: 'Herinnering',
+      notifBody: 'Goeie môre Grace. Tik asseblief die groen knoppie om te laat weet jy is reg.'
+    }
+  };
+
+  var view = 'lang';      // lang | main | ok | help
+  var lang = 'en';
+  var remindersOn = false;
+  var flashTimer = null;
+  var playTimer = null;
+  var lastTime = '06:01';
+
+  var $ = function (sel) { return root.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); };
+  var copy = function () { return COPY[lang]; };
+
+  function clockLabel() {
+    // Live clock, SAST, so the demo never shows a stale-looking time.
+    var now = new Date(Date.now() + 2 * 3600 * 1000);
+    return String(now.getUTCHours()).padStart(2, '0') + ':' + String(now.getUTCMinutes()).padStart(2, '0');
+  }
+
+  function chime(good) {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      var ac = new AC();
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination); o.type = 'sine';
+      if (good) {
+        o.frequency.setValueAtTime(523, ac.currentTime);
+        o.frequency.setValueAtTime(784, ac.currentTime + 0.18);
+      } else {
+        o.frequency.setValueAtTime(440, ac.currentTime);
+        o.frequency.setValueAtTime(330, ac.currentTime + 0.25);
+      }
+      g.gain.setValueAtTime(0.0001, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.16, ac.currentTime + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.75);
+      o.start(); o.stop(ac.currentTime + 0.8);
+    } catch (e) { /* audio is a nicety, never a requirement */ }
+  }
+
+  function buzz(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+  }
+
+  function flash(kind) {
+    var el = $('#ewd-flash');
+    el.className = 'ewd-flash is-on ' + (kind === 'ok' ? 'green' : 'red');
+    $('#ewd-flash-icon').innerHTML = kind === 'ok'
+      ? '<path d="M10 25l10 10 18-22"/>'
+      : '<path d="M24 10v18M24 36v2"/>';
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { el.className = 'ewd-flash ' + (kind === 'ok' ? 'green' : 'red'); }, 900);
+  }
+
+  function paintSteps() {
+    // The reminder (step 4) takes precedence while its notification is on screen,
+    // so exactly one step is ever highlighted.
+    var toastOn = $('#ewd-toast').classList.contains('is-on');
+    var current = toastOn ? 4 : (view === 'lang' ? 1 : (view === 'main' ? 2 : 3));
+    $$('.ewd-step').forEach(function (s) {
+      var n = Number(s.getAttribute('data-step'));
+      s.classList.toggle('is-on', n === current);
+      s.classList.toggle('is-past', n < current);
+    });
+  }
+
+  function paint() {
+    $$('.ewd-view').forEach(function (v) { v.classList.toggle('is-on', v.getAttribute('data-view') === view); });
+    var c = copy();
+
+    // main screen text (language aware)
+    $('#ewd-greet').textContent = c.hello(new Date().getHours()) + ' ' + c.greetName;
+    $$('[data-t="okLabel"]').forEach(function (e) { e.textContent = c.okLabel; });
+    $$('[data-t="okSub"]').forEach(function (e) { e.textContent = c.okSub; });
+    $$('[data-t="helpLabel"]').forEach(function (e) { e.textContent = c.helpLabel; });
+    $$('[data-t="helpSub"]').forEach(function (e) { e.textContent = c.helpSub; });
+
+    // confirmations
+    $('#ewd-ok-title').textContent = c.okTitle;
+    $('#ewd-ok-body').textContent = c.okBody;
+    $('#ewd-ok-time').textContent = c.okTime(lastTime);
+    $('#ewd-help-title').textContent = c.helpTitle;
+    $('#ewd-help-body').textContent = c.helpBody;
+    $('#ewd-help-time').textContent = c.helpTime(lastTime);
+    $('#ewd-imfine').textContent = c.imfine;
+
+    // reminder option + notification
+    var label = $('#ewd-remind-label');
+    label.textContent = remindersOn ? c.remindOn : c.remindOff;
+    $('.ewd-remind').classList.toggle('is-on', remindersOn);
+    $('#ewd-toast-title').textContent = c.notifTitle;
+    $('#ewd-toast-body').textContent = c.notifBody;
+
+    // EN / AF toggle
+    $$('[data-ewd="toggle-lang"]').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-lang') === lang);
+    });
+
+    paintSteps();
+  }
+
+  function go(next) { view = next; paint(); }
+
+  function showToast(on) {
+    $('#ewd-toast').classList.toggle('is-on', !!on);
+    paintSteps();
+  }
+
+  function stopPlay() { if (playTimer) { clearTimeout(playTimer); playTimer = null; } }
+
+  function pressOk() {
+    lastTime = clockLabel();
+    chime(true); buzz(60); flash('ok');
+    go('ok');
+  }
+
+  function pressHelp() {
+    lastTime = clockLabel();
+    chime(false); buzz([120, 60, 120]); flash('help');
+    go('help');
+  }
+
+  function click(el) { if (el) el.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+
+  function hit(el, ms) {
+    el.classList.add('is-hit');
+    setTimeout(function () { el.classList.remove('is-hit'); }, ms || 260);
+  }
+
+  // --- one-click walkthrough of the whole flow -----------------------------
+  function play() {
+    stopPlay();
+    remindersOn = false; showToast(false); go('lang');
+    var steps = [
+      [520, function () { hit($('.ewd-lang-btn.is-primary')); }],
+      [760, function () { lang = 'en'; go('main'); }],
+      [1500, function () { showToast(true); }],          // the 08:00 reminder arrives
+      [2600, function () { showToast(false); }],
+      [3100, function () { hit($('.ewd-btn.ok')); }],
+      [3350, pressOk],
+      [5200, function () { go('main'); }],
+      [5700, function () { hit($('.ewd-btn.help')); }],
+      [5950, pressHelp],
+      [8000, function () { $('#ewd-note').textContent = 'That is the whole morning: choose language, one tap, done — with an 08:00 reminder if they forget.'; }]
+    ];
+    steps.forEach(function (s) { playTimer = setTimeout(s[1], s[0]); });
+  }
+
+  // --- events --------------------------------------------------------------
+  root.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-ewd]');
+    if (!t) return;
+    var act = t.getAttribute('data-ewd');
+
+    if (act === 'lang') {                       // language selection screen
+      stopPlay();
+      lang = t.getAttribute('data-lang');
+      paint();
+      setTimeout(function () { go('main'); }, 320);
+      return;
+    }
+    if (act === 'toggle-lang') { stopPlay(); lang = t.getAttribute('data-lang'); paint(); return; }
+    if (act === 'remind') {                     // the 08:00 timer notification option
+      stopPlay();
+      remindersOn = !remindersOn;
+      paint();
+      if (remindersOn) showToast(true);
+      return;
+    }
+    if (act === 'ok') { stopPlay(); pressOk(); return; }
+    if (act === 'help') { stopPlay(); pressHelp(); return; }
+    if (act === 'imfine') { stopPlay(); lastTime = clockLabel(); chime(true); go('ok'); return; }
+    if (act === 'notify') { stopPlay(); go('main'); showToast(true); return; }
+    if (act === 'play') { play(); return; }
+    if (act === 'restart') {
+      stopPlay(); lang = 'en'; remindersOn = false; view = 'lang';
+      showToast(false);
+      $('#ewd-note').textContent = 'Tap the buttons — this is the real resident flow. It always starts again from here when the page is reloaded.';
+      paint();
+      return;
+    }
+  });
+
+  // Tapping the notification opens the app, exactly like the real push does.
+  $('#ewd-toast').addEventListener('click', function () { showToast(false); go('main'); });
+  $('#ewd-toast').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showToast(false); go('main'); }
+  });
+
+  paint();
+})();
+</script>
+<!-- EW-DEMO:END -->
+
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="problem">
+    <div class="wrap">
+      <h2>The morning round takes an hour. It should take two minutes.</h2>
+      <p style="color: var(--ew-slate-600); font-size: 18px; max-width: 600px;">Right now, someone walks the halls checking a card in every window. It works, but it's slow, and it depends entirely on one person's morning.</p>
+      
+      <div class="problem-grid">
+        <div class="problem-card old">
+          <div class="tag">The way it happens today</div>
+          <h3>Manual morning rounds</h3>
+          <p>Staff walk every corridor, check every window, and write it all down by hand — every single morning, rain or shine. Miss one room, and that resident might not be checked until someone remembers.</p>
+        </div>
+        <div class="problem-card new">
+          <div class="tag">The way it should happen</div>
+          <h3>One tap, instant status</h3>
+          <p>Residents tap one button on their own phone. Staff open one screen and see everyone's status at a glance. No tap by cutoff? That's your alert to visit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="wrap">
+      <div class="section-header">
+        <h2>How the morning actually runs</h2>
+        <p>Four simple moments, timed automatically, every single day.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>7:00 AM — Reset</h3>
+          <p>Every resident's status resets automatically. A gentle prompt appears on their phone.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Resident taps</h3>
+          <p>One tap. Green if they're okay, red if they need help. That's the entire interaction.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>9:00 AM — Cutoff</h3>
+          <p>Anyone who hasn't responded is automatically flagged — nobody is missed.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>Staff see everything</h3>
+          <p>A single dashboard shows who's okay, who needs help, and who hasn't responded.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAFF DASHBOARD -->
+  <section class="staff-section">
+    <div class="wrap">
+      <div class="section-header">
+        <h2>Built for staff who need answers fast</h2>
+        <p>One live dashboard, the whole building, updated in real-time.</p>
+      </div>
+
+      <div class="staff-layout">
+        <ul class="staff-features">
+          <li>Live status for every resident, updated instantly</li>
+          <li>Red alerts the moment a resident needs help</li>
+          <li>Missed cutoffs flagged automatically at 9:00 AM</li>
+          <li>Staff override for in-person visits</li>
+          <li>Multi-village support for larger care groups</li>
+          <li>Works for 10 residents or 1,000+</li>
+        </ul>
+
+        <div class="dashboard-mock">
+          <div class="dash-header">
+            <div class="dash-brand">
+              <img src="https://elderwatch3.vercel.app/elderwatch-logo.png" alt="ElderWatch">
+              <span>ElderWatch</span>
+            </div>
+            <div class="dash-home">Willow Cottage</div>
+          </div>
+          <div class="dash-stats">
+            <div class="dash-stat">
+              <div class="label">Total</div>
+              <div class="value" style="color: var(--ew-slate-800);">24</div>
+            </div>
+            <div class="dash-stat ok">
+              <div class="label">Checked In</div>
+              <div class="value">21</div>
+            </div>
+            <div class="dash-stat help">
+              <div class="label">Need Help</div>
+              <div class="value">1</div>
+            </div>
+          </div>
+          <div class="dash-residents">
+            <div class="dash-resident">
+              <div class="info">
+                <h4>Grace Williams</h4>
+                <span>Room 12 · Unit B</span>
+              </div>
+              <div class="status ok">Checked in 06:45</div>
+            </div>
+            <div class="dash-resident">
+              <div class="info">
+                <h4>Arthur Johnson</h4>
+                <span>Room 102</span>
+              </div>
+              <div class="status ok">Checked in 07:12</div>
+            </div>
+            <div class="dash-resident">
+              <div class="info">
+                <h4>Elsie Taylor</h4>
+                <span>Room 8 · Unit A</span>
+              </div>
+              <div class="status help">Needs attention</div>
+            </div>
+            <div class="dash-resident">
+              <div class="info">
+                <h4>David Brown</h4>
+                <span>Room 15</span>
+              </div>
+              <div class="status awaiting">Awaiting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="wrap">
+      <div class="section-header">
+        <h2>Built for residents, designed for care</h2>
+        <p>Every detail is intentional — because the people using this deserve dignity, not complexity.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <path d="M12 18h.01"/>
+            </svg>
+          </div>
+          <h3>Large, simple buttons</h3>
+          <p>Two big buttons, high contrast, easy to read. Designed for hands that might not be as steady as they used to be.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <h3>English & Afrikaans</h3>
+          <p>Tap once to switch languages. Residents choose what's comfortable for them — no settings to change.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+          </div>
+          <h3>Instant alerts</h3>
+          <p>When a resident taps "I need help," staff hear an alert chime immediately. No delays, no missed calls.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>Private & secure</h3>
+          <p>No social features, no chat, no data collection. Just a daily check-in that keeps residents safe.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h3>Automatic cutoff</h3>
+          <p>Set a cutoff time (like 9:00 AM). Anyone who hasn't responded is flagged — nobody falls through the cracks.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </div>
+          <h3>Multi-village support</h3>
+          <p>Manage multiple care homes from one account. Each village gets its own dashboard and settings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="wrap">
+      <h2>Peace of mind, before the coffee's even finished</h2>
+      <p>A short trial with a handful of residents is the easiest way to see how it feels in your home.</p>
+      <div class="cta-buttons">
+        <a href="https://wa.me/27724123856" class="cta-btn primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          WhatsApp for a Trial
+        </a>
+        <a href="mailto:Peter.e.vosloo@gmail.com" class="cta-btn secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
+          Email Us
+        </a>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <img src="https://elderwatch3.vercel.app/elderwatch-logo.png" alt="ElderWatch">
+      <span>ElderWatch</span>
+    </div>
+    <p>A simple daily check-in for frailcare homes. Made with care in South Africa.</p>
+      <p class="legal">&copy; 2026 Shaun Gordon &middot; ElderWatch. All rights reserved. Patent Pending.</p>
+    <p class="legal-sub">ElderWatch and its software, design and content are protected by copyright law. Unauthorised copying, modification or distribution is prohibited.</p>
+</footer>
+
+</body>
+</html>

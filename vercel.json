@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "vite",
+  "installCommand": "npm install",
+  "functions": {
+    "api/cron/*.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    { "source": "/marketing", "destination": "/marketing.html" },
+    { "source": "/link", "destination": "/index.html" },
+    { "source": "/link/:code", "destination": "/index.html" },
+    { "source": "/checkin", "destination": "/index.html" },
+    { "source": "/checkin/:residentId", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/cron/daily-reset", "schedule": "0 22 * * *" },
+    { "path": "/api/cron/reminder-push", "schedule": "0 6 * * *" }
+  ]
+}

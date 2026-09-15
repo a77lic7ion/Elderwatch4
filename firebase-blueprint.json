@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "Resident": {
+      "title": "Resident",
+      "description": "A resident living in the care facility",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique resident ID"
+        },
+        "homeId": {
+          "type": "string",
+          "description": "Care home / facility ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the resident"
+        },
+        "roomNumber": {
+          "type": "string",
+          "description": "Room or cottage number"
+        },
+        "wing": {
+          "type": "string",
+          "description": "Wing or section"
+        },
+        "primarySister": {
+          "type": "string",
+          "description": "Primary on-duty nurse / sister"
+        },
+        "sisterPhone": {
+          "type": "string",
+          "description": "Direct phone number of on-duty nurse"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "hospital", "away"]
+        }
+      },
+      "required": ["id", "homeId", "name", "roomNumber"]
+    },
+    "Checkin": {
+      "title": "Checkin",
+      "description": "Daily morning wellness check-in record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Composite key {homeId}_{residentId}_{date}"
+        },
+        "homeId": {
+          "type": "string",
+          "description": "Care home ID"
+        },
+        "residentId": {
+          "type": "string",
+          "description": "Resident ID"
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO date YYYY-MM-DD"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "not_ok", "awaiting"]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of check-in"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Who performed the action ('resident' or 'nurse')"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes"
+        }
+      },
+      "required": ["id", "homeId", "residentId", "date", "status", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/residents/{residentId}": {
+      "schema": "Resident",
+      "description": "Collection of resident profiles"
+    },
+    "/checkins/{checkinId}": {
+      "schema": "Checkin",
+      "description": "Collection of daily check-in logs"
+    }
+  }
+}
