@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Copy, Check, Link2, Smartphone, RefreshCw, Key, Download, Printer } from 'lucide-react';
+import { X, Copy, Check, Key, RefreshCw, Printer } from 'lucide-react';
 import { ResidentTodayView } from '../types';
 
 interface DeviceLinkQRModalProps {
   resident: ResidentTodayView;
   onClose: () => void;
   onCodeRegenerated: () => void;
-  onSimulateDeviceBind: (code: string) => void;
 }
 
 export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
@@ -15,20 +14,13 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
   onCodeRegenerated,
   onSimulateDeviceBind,
 }) => {
-  const [copiedPermanent, setCopiedPermanent] = useState(false);
-  const [copiedAuto, setCopiedAuto] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [currentCode, setCurrentCode] = useState(resident.oneTimeLinkCode || '');
   const [autoGenerating, setAutoGenerating] = useState(!resident.oneTimeLinkCode);
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const permanentUrl = `${origin}/checkin/${resident.id}`;
-
-  // The auto-pair URL embeds the one-time link code as a single-use token.
-  // Opening this link on any phone automatically pairs it to the resident.
-  const autoPairUrl = currentCode
-    ? `${origin}/checkin/${resident.id}?pair=${encodeURIComponent(currentCode)}`
-    : '';
 
   // Auto-generate a code immediately if the resident doesn't have one yet,
   // so the code is ready the moment the modal opens — no manual
@@ -54,17 +46,11 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCopyAutoPairUrl = () => {
-    if (!autoPairUrl) return;
-    navigator.clipboard.writeText(autoPairUrl);
-    setCopiedAuto(true);
-    setTimeout(() => setCopiedAuto(false), 2500);
-  };
-
-  const handleCopyPermanentUrl = () => {
-    navigator.clipboard.writeText(permanentUrl);
-    setCopiedPermanent(true);
-    setTimeout(() => setCopiedPermanent(false), 2500);
+  const handleCopyCode = () => {
+    if (!currentCode) return;
+    navigator.clipboard.writeText(currentCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   // Manual rotation of the code — old codes immediately stop working.
@@ -157,11 +143,11 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
                     {currentCode}
                   </code>
                   <button
-                    onClick={() => { navigator.clipboard.writeText(currentCode); setCopiedAuto(true); setTimeout(() => setCopiedAuto(false), 2500); }}
+                    onClick={handleCopyCode}
                     className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
                   >
-                    {copiedAuto ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copiedAuto ? 'Copied' : 'Copy Code'}
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? 'Copied' : 'Copy Code'}
                   </button>
                 </div>
               ) : (
@@ -185,65 +171,8 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
             </div>
           </div>
 
-          {/* Auto-Pair URL — for staff click-open */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-            <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5" />
-              Or open this link on the phone (auto-pairs)
-            </p>
-            <p className="text-[11px] text-slate-500">
-              Opening this link on any phone automatically pairs it to {resident.name}.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                readOnly
-                value={autoPairUrl || (autoGenerating ? 'Generating...' : '')}
-                className="flex-1 text-[10px] px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 select-all font-mono truncate"
-              />
-              <button
-                onClick={handleCopyAutoPairUrl}
-                disabled={!autoPairUrl}
-                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer disabled:opacity-50"
-              >
-                {copiedAuto ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Permanent check-in URL (after pairing) */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-            <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <Smartphone className="w-3.5 h-3.5" />
-              Already paired? Bookmark this URL
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                readOnly
-                value={permanentUrl}
-                className="flex-1 text-[10px] px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 select-all font-mono truncate"
-              />
-              <button
-                onClick={handleCopyPermanentUrl}
-                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer"
-              >
-                {copiedPermanent ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-          </div>
-
           {/* Actions */}
-          <div className="pt-2 border-t border-slate-100 space-y-2">
-            <button
-              onClick={() => onSimulateDeviceBind(currentCode)}
-              disabled={!currentCode}
-              className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50"
-            >
-              <Smartphone className="w-4 h-4" />
-              <span>Test: Open Resident View in This Browser</span>
-            </button>
-
+          <div className="pt-2 border-t border-slate-100">
             <button
               onClick={handleRotateCode}
               disabled={regenerating || autoGenerating}

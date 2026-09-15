@@ -20,7 +20,20 @@ export default function App() {
       const path = window.location.pathname;
       if (path.startsWith('/checkin')) return 'checkin';
       if (path.startsWith('/link')) return 'link';
-      
+
+      // If the device is already paired, go straight to check-in
+      const binding = localStorage.getItem('elderwatch_device_binding');
+      if (binding) {
+        try {
+          const parsed = JSON.parse(binding);
+          if (parsed.residentId) {
+            const checkinUrl = `/checkin/${parsed.residentId}`;
+            window.history.replaceState({}, '', checkinUrl);
+            return 'checkin';
+          }
+        } catch { /* ignore corrupt binding */ }
+      }
+
       // PWA launch: check if we have a saved resident check-in URL
       const savedResidentUrl = localStorage.getItem('ew_pwa_checkin_url');
       if (savedResidentUrl) {
@@ -102,14 +115,24 @@ export default function App() {
       }
     });
 
-    // Auto-route to pairing code screen if no staff and no device binding
-    if (!sessionStorage.getItem('elderwatch_staff_auth')) {
+  // Auto-route to pairing code screen if no staff and no device binding.
+  // In TWA / standalone (APK) mode we always force the pairing screen on first
+  // open — a staff session restored from a shared browser origin must not skip it.
+  if (!sessionStorage.getItem('elderwatch_staff_auth')) {
       const binding = localStorage.getItem('elderwatch_device_binding');
-      if (!binding && currentRoute === 'admin') {
+      if (!binding) {
         window.history.replaceState({}, '', '/link');
         setCurrentRoute('link');
       }
-    }
+  } else if (isPWA) {
+      // APK opened with a stale staff session (shared with Chrome) and no device
+      // binding yet — push it to the pairing screen instead of the admin panel.
+      const binding = localStorage.getItem('elderwatch_device_binding');
+      if (!binding) {
+        window.history.replaceState({}, '', '/link');
+        setCurrentRoute('link');
+      }
+  }
 
     return () => unsubscribe();
   }, []);  // eslint-disable-linereact-hooks/exhaustive-deps
@@ -188,11 +211,10 @@ export default function App() {
 
   const handleLinkedSuccess = (binding: DeviceBinding) => {
     console.log('Successfully paired device for:', binding.residentName);
-    navigate('checkin');
-  };
-
-  const handleSimulateDeviceBind = (code: string) => {
-    navigate('link', code);
+    const checkinUrl = `/checkin/${binding.residentId}`;
+    window.history.replaceState({}, '', checkinUrl);
+    setPermanentResidentId(binding.residentId);
+    setCurrentRoute('checkin');
   };
 
   const [isNight] = useAppTheme();
@@ -242,7 +264,6 @@ export default function App() {
               user={staffUser}
               initialHome={staffHome}
               onLogout={handleLogout}
-              onSimulateDeviceBind={handleSimulateDeviceBind}
             />
           ) : (
             <StaffLoginScreen

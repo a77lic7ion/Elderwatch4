@@ -110,7 +110,8 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
   const savedLang = (() => {
     try { const s = localStorage.getItem('ew_lang'); return (s === 'af' || s === 'en') ? s : 'en'; } catch { return 'en'; }
   })();
-  const langChosenRef = useRef(savedLang !== 'en' || localStorage.getItem('ew_lang') !== null);
+  // true once the user has explicitly chosen a language (or it was previously saved)
+  const langChosenRef = useRef(localStorage.getItem('ew_lang') !== null);
   const [lang, setLang] = useState<LangCode>(savedLang);
   const [isLate, setIsLate] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
@@ -238,10 +239,9 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         readFromFirestore();
 
         // If no language has been chosen yet, prompt for it now.
-        // This covers the /link pairing flow where permanentResidentId
-        // may not be present, so the later auto-bind language check is skipped.
-        const savedLang = localStorage.getItem('ew_lang');
-        if (!savedLang && view !== 'ok' && view !== 'help') {
+        // (localStorage에 저장된 값이 없을 때만 언어 선택 화면을 보인다.
+        //  savedLang 기본값은 'en'이므로 !savedLang로는 판단할 수 없다.)
+        if (!localStorage.getItem('ew_lang') && view !== 'ok' && view !== 'help') {
           setView('lang_select');
         }
       }

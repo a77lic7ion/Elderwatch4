@@ -55,7 +55,6 @@ interface AdminPanelProps {
   user: StaffUser;
   initialHome: Home;
   onLogout: () => void;
-  onSimulateDeviceBind: (code: string) => void;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
