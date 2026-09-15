@@ -73,8 +73,11 @@ export default function App() {
   // Restore staff session if present (sessionStorage = per-tab sessions)
   // Each browser tab has its own isolated Firebase Auth instance (inMemoryPersistence)
   // so multiple users can be signed in simultaneously in different tabs.
+  // If no staff session and no device binding exists, default to the link (pairing code) route
+  // — this is what makes the APK show the code-entry screen on first open.
   useEffect(() => {
-    // On mount, restore from sessionStorage if present
+    if (typeof window === 'undefined') return;
+    // Restore staff session on mount
     try {
       const savedAuth = sessionStorage.getItem('elderwatch_staff_auth');
       if (savedAuth) {
@@ -92,7 +95,6 @@ export default function App() {
     // so we clear sessionStorage to match.
     const unsubscribe = onAuthChange((firebaseUser) => {
       if (!firebaseUser) {
-        // No user in this tab's in-memory auth — clear this tab's session
         setStaffToken(null);
         setStaffUser(null);
         setStaffHome(null);
@@ -100,8 +102,17 @@ export default function App() {
       }
     });
 
+    // Auto-route to pairing code screen if no staff and no device binding
+    if (!sessionStorage.getItem('elderwatch_staff_auth')) {
+      const binding = localStorage.getItem('elderwatch_device_binding');
+      if (!binding && currentRoute === 'admin') {
+        window.history.replaceState({}, '', '/link');
+        setCurrentRoute('link');
+      }
+    }
+
     return () => unsubscribe();
-  }, []);
+  }, []);  // eslint-disable-linereact-hooks/exhaustive-deps
 
   // Handle PWA mode - ensure saved URL is restored
   useEffect(() => {

@@ -102,7 +102,7 @@ export const DeviceLinkScreen: React.FC<DeviceLinkScreenProps> = ({
       if (currentSnap.exists()) {
         const currentData = currentSnap.data();
         if (currentData.linkCodeGeneratedAt && resident.linkCodeGeneratedAt && currentData.linkCodeGeneratedAt !== resident.linkCodeGeneratedAt) {
-          setError('This pairing code has been revoked. Please ask staff for a new QR code.');
+          setError('This pairing code has been revoked. Please ask staff for a new pairing code.');
           setBindingInProgress(false);
           return;
         }

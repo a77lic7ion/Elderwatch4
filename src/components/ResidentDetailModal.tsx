@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, AlertTriangle, Clock, HelpCircle, QrCode, Phone, User, Calendar, ShieldAlert } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, Clock, HelpCircle, Key, Phone, User, Calendar, ShieldAlert } from 'lucide-react';
 import { ResidentTodayView, CheckIn } from '../types';
 import { useAppTheme } from './ThemeToggle';
 import { db } from '../lib/firebase';
@@ -219,8 +219,8 @@ export const ResidentDetailModal: React.FC<ResidentDetailModalProps> = ({
                 onClick={() => onOpenQR(resident)}
                 className={`text-xs font-semibold flex items-center gap-1 ${isNight ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-800'}`}
               >
-                <QrCode className="w-3.5 h-3.5" />
-                <span>Pairing QR</span>
+                <Key className="w-3.5 h-3.5" />
+                <span>Show Pairing Code</span>
               </button>
             </div>
 
@@ -326,8 +326,8 @@ export const ResidentDetailModal: React.FC<ResidentDetailModalProps> = ({
             onClick={() => onOpenQR(resident)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 text-white font-semibold text-xs hover:bg-slate-800 transition"
           >
-            <QrCode className="w-4 h-4" />
-            <span>Generate Phone Setup QR</span>
+            <Key className="w-4 h-4" />
+            <span>Show Pairing Code</span>
           </button>
           <button
             onClick={onClose}

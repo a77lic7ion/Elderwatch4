@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   Users,
   Activity,
-  QrCode,
   Settings,
   AlertTriangle,
   CheckCircle,
@@ -31,6 +30,7 @@ import {
   Download,
   CalendarOff,
   Calendar,
+  Key,
 } from 'lucide-react';
 import { ResidentTodayView, Home, StaffUser, JobExecutionLog, PushNotificationRecord } from '../types';
 import { playEmergencyAlertSound } from '../utils/audioAlert';
@@ -573,13 +573,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Manual rotation (kept for compatibility with batch operations)
   const handleRotateLinkCode = async (residentId: string, roomNumber: string, residentName: string) => {
-    if (!confirm(`Rotate pairing URL for "${residentName}"? The old QR code will stop working immediately.`)) return;
+    if (!confirm(`Rotate pairing code for "${residentName}"? The old code will stop working immediately.`)) return;
     try {
       const { regenerateLinkCode } = await import('../lib/firebase-api');
       await regenerateLinkCode(residentId, roomNumber);
       fetchResidents();
     } catch (err) {
-      alert('Failed to rotate pairing URL: ' + (err instanceof Error ? err.message : 'Unknown error'));
+       alert('Failed to rotate pairing code: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
 
@@ -1504,8 +1504,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   onClick={handleBatchLinkCodes}
                   className={`px-3 py-2.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${isNight ? 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'}`}
                 >
-                  <QrCode className="w-4 h-4" />
-                  <span>Export Pairing QR Codes</span>
+                  <Key className="w-4 h-4" />
+                  <span>Export Pairing Codes</span>
                 </button>
                 <button
                   onClick={() => {
@@ -1590,14 +1590,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <button
                             onClick={() => setSelectedResidentForQR(r)}
                             className={`p-1.5 rounded-lg border transition cursor-pointer ${isNight ? 'border-slate-700 hover:bg-emerald-950/50 text-emerald-400' : 'border-slate-200 hover:bg-emerald-50 text-emerald-600'}`}
-                            title="Pair Device (QR code)"
+                            title="Show Pairing Code"
                           >
-                            <QrCode className="w-3.5 h-3.5" />
+                            <Key className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleRotateLinkCode(r.id, r.roomNumber, r.name)}
                             className={`p-1.5 rounded-lg border transition cursor-pointer ${isNight ? 'border-slate-700 hover:bg-amber-950/50 text-amber-400' : 'border-slate-200 hover:bg-amber-50 text-amber-600'}`}
-                            title="Rotate Pairing URL (invalidates old QR)"
+                            title="Rotate Pairing Code (invalidates old code)"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />
                           </button>

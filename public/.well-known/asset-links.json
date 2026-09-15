@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.elderwatch.launcher",
+    "sha256_cert_fingerprints": ["7E:60:DD:D6:0F:EC:E2:A9:1F:02:F4:2A:6F:05:C3:33:56:AD:C9:A8:4E:65:D5:E4:E5:19:50:09:13:5C:F9:2F"]
+  }
+}]

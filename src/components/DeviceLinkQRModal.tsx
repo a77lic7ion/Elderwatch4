@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Copy, Check, Link2, Smartphone, RefreshCw, QrCode, Download, Printer } from 'lucide-react';
-import QRCode from 'qrcode';
+import { X, Copy, Check, Link2, Smartphone, RefreshCw, Key, Download, Printer } from 'lucide-react';
 import { ResidentTodayView } from '../types';
 
 interface DeviceLinkQRModalProps {
@@ -21,19 +20,18 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
   const [regenerating, setRegenerating] = useState(false);
   const [currentCode, setCurrentCode] = useState(resident.oneTimeLinkCode || '');
   const [autoGenerating, setAutoGenerating] = useState(!resident.oneTimeLinkCode);
-  const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const permanentUrl = `${origin}/checkin/${resident.id}`;
 
   // The auto-pair URL embeds the one-time link code as a single-use token.
-  // Scanning the QR and opening the link completes link + pair in one step.
+  // Opening this link on any phone automatically pairs it to the resident.
   const autoPairUrl = currentCode
     ? `${origin}/checkin/${resident.id}?pair=${encodeURIComponent(currentCode)}`
     : '';
 
   // Auto-generate a code immediately if the resident doesn't have one yet,
-  // so the QR code is ready the moment the modal opens — no manual
+  // so the code is ready the moment the modal opens — no manual
   // "Regenerate" click required.
   useEffect(() => {
     if (currentCode) return;
@@ -56,24 +54,6 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Generate QR code whenever the autoPairUrl changes
-  useEffect(() => {
-    let cancelled = false;
-    if (autoPairUrl) {
-      QRCode.toDataURL(autoPairUrl, {
-        width: 320,
-        margin: 2,
-        color: { dark: '#0f172a', light: '#ffffff' },
-        errorCorrectionLevel: 'H',
-      })
-        .then((url) => { if (!cancelled) setQrDataUrl(url); })
-        .catch(() => { if (!cancelled) setQrDataUrl(''); });
-    } else {
-      setQrDataUrl('');
-    }
-    return () => { cancelled = true; };
-  }, [autoPairUrl]);
-
   const handleCopyAutoPairUrl = () => {
     if (!autoPairUrl) return;
     navigator.clipboard.writeText(autoPairUrl);
@@ -87,7 +67,7 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
     setTimeout(() => setCopiedPermanent(false), 2500);
   };
 
-  // Manual rotation of the URL — old QR codes immediately stop working.
+  // Manual rotation of the code — old codes immediately stop working.
   const handleRotateCode = async () => {
     setRegenerating(true);
     try {
@@ -102,14 +82,6 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
     }
   };
 
-  const handleDownloadQr = () => {
-    if (!qrDataUrl) return;
-    const a = document.createElement('a');
-    a.href = qrDataUrl;
-    a.download = `elderwatch-qr-${resident.name.replace(/\s+/g, '-')}-room-${resident.roomNumber}.png`;
-    a.click();
-  };
-
   const handlePrint = () => {
     if (typeof window === 'undefined') return;
     const printWindow = window.open('', '_blank', 'width=600,height=800');
@@ -118,13 +90,13 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Pairing Card — ${resident.name} (Room ${resident.roomNumber})</title>
+          <title>Pairing Code — ${resident.name} (Room ${resident.roomNumber})</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-align: center; padding: 24px; }
             .card { border: 2px dashed #94a3b8; border-radius: 16px; padding: 24px; max-width: 480px; margin: 0 auto; }
             h1 { font-size: 28px; margin: 0 0 4px; }
             h2 { font-size: 18px; color: #475569; margin: 0 0 16px; }
-            img { width: 320px; height: 320px; }
+            .code { font-family: monospace; font-size: 36px; letter-spacing: 6px; font-weight: 900; background: #fff; border: 2px solid #10b981; border-radius: 12px; padding: 16px; margin: 16px 0; }
             .url { font-family: monospace; font-size: 12px; word-break: break-all; background: #f1f5f9; padding: 8px; border-radius: 8px; margin-top: 12px; }
             .footer { color: #64748b; font-size: 12px; margin-top: 16px; }
             @media print { .no-print { display: none; } }
@@ -134,9 +106,9 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
           <div class="card">
             <h1>${resident.name}</h1>
             <h2>Room ${resident.roomNumber}${resident.unitNumber ? ' / Unit ' + resident.unitNumber : ''}</h2>
-            <img src="${qrDataUrl}" alt="Pairing QR Code" />
-            <p>Scan with the phone's camera to lock this device to ${resident.name} for daily check-ins.</p>
-            <div class="url">${autoPairUrl}</div>
+            <div class="code">${currentCode || '—'}</div>
+            <p style="font-size:13px;color:#475569;">Type this code on the resident's phone to pair it for daily check-ins.</p>
+            <div class="url">${autoPairUrl || '—'}</div>
             <p class="footer">ElderWatch — Daily Wellness Check-in</p>
           </div>
           <div class="no-print" style="margin-top: 20px;">
@@ -168,42 +140,42 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
 
         {/* Body */}
         <div className="p-6 space-y-4">
-          {/* QR Code - Main pairing method */}
+          {/* Pairing Code — Main pairing method */}
           <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 space-y-3">
             <p className="text-sm font-bold text-emerald-800 flex items-center gap-1.5">
-              <QrCode className="w-4 h-4" />
-              SCAN QR CODE TO LINK &amp; PAIR IN ONE STEP
+              <Key className="w-4 h-4" />
+              PAIRING CODE — ENTER ON THE RESIDENT'S PHONE
             </p>
             <p className="text-xs text-emerald-700">
-              Open the phone's camera, point at this QR code, and tap the link. The phone will be locked to this resident automatically — no code entry required.
+              Type this code on the resident's phone to pair it to {resident.name}. The code stays valid until you rotate it.
             </p>
             <div className="flex flex-col items-center gap-3">
-              {qrDataUrl ? (
-                <img
-                  src={qrDataUrl}
-                  alt="Pairing QR code"
-                  className="w-56 h-56 rounded-xl border-4 border-white shadow-md bg-white"
-                />
+              {currentCode ? (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-widest text-emerald-600 font-semibold">Device Pairing Code</span>
+                  <code className="text-3xl font-mono font-black text-emerald-900 tracking-widest bg-white border-2 border-emerald-300 rounded-xl px-5 py-4 shadow-inner">
+                    {currentCode}
+                  </code>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(currentCode); setCopiedAuto(true); setTimeout(() => setCopiedAuto(false), 2500); }}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    {copiedAuto ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedAuto ? 'Copied' : 'Copy Code'}
+                  </button>
+                </div>
               ) : (
-                <div className="w-56 h-56 rounded-xl border-2 border-dashed border-emerald-300 flex flex-col items-center justify-center text-emerald-600 text-xs gap-2">
+                <div className="w-56 h-28 rounded-xl border-2 border-dashed border-emerald-300 flex flex-col items-center justify-center text-emerald-600 text-xs gap-2">
                   <RefreshCw className="w-6 h-6 animate-spin" />
                   <span className="font-semibold">
-                    {autoGenerating ? 'Generating pairing URL...' : 'Preparing QR...'}
+                    {autoGenerating ? 'Generating pairing code...' : 'Preparing...'}
                   </span>
                 </div>
               )}
               <div className="flex gap-2 w-full">
                 <button
-                  onClick={handleDownloadQr}
-                  disabled={!qrDataUrl}
-                  className="flex-1 py-2 px-3 rounded-xl bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  Download
-                </button>
-                <button
                   onClick={handlePrint}
-                  disabled={!qrDataUrl}
+                  disabled={!currentCode}
                   className="flex-1 py-2 px-3 rounded-xl bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -213,11 +185,11 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
             </div>
           </div>
 
-          {/* Auto-Pair URL */}
+          {/* Auto-Pair URL — for staff click-open */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
             <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <Link2 className="w-3.5 h-3.5" />
-              Or send this link via WhatsApp/SMS
+              Or open this link on the phone (auto-pairs)
             </p>
             <p className="text-[11px] text-slate-500">
               Opening this link on any phone automatically pairs it to {resident.name}.
@@ -281,7 +253,7 @@ export const DeviceLinkQRModal: React.FC<DeviceLinkQRModalProps> = ({
               <span>
                 {regenerating
                   ? 'Rotating...'
-                  : 'Rotate Pairing URL (invalidates old QR)'}
+                  : 'Rotate Pairing Code (invalidates old code)'}
               </span>
             </button>
           </div>

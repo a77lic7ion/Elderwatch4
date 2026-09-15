@@ -107,14 +107,11 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
   const [deviceBinding, setDeviceBinding] = useState<DeviceBinding | null>(null);
   const [residentProfile, setResidentProfile] = useState<ResidentProfile>(DEFAULT_RESIDENT);
   const [view, setView] = useState<ViewState>('morning');
-  const langChosenRef = useRef(false);
-  const [lang, setLang] = useState<LangCode>(() => {
-    try {
-      const saved = localStorage.getItem('ew_lang');
-      if (saved === 'af' || saved === 'en') return saved;
-    } catch {}
-    return 'en';
-  });
+  const savedLang = (() => {
+    try { const s = localStorage.getItem('ew_lang'); return (s === 'af' || s === 'en') ? s : 'en'; } catch { return 'en'; }
+  })();
+  const langChosenRef = useRef(savedLang !== 'en' || localStorage.getItem('ew_lang') !== null);
+  const [lang, setLang] = useState<LangCode>(savedLang);
   const [isLate, setIsLate] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
   const [helpTime, setHelpTime] = useState<Date | null>(null);
@@ -210,13 +207,35 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         };
         verifyStillPaired();
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString().split('T')[0];
         const existingCheckin = localStorage.getItem(`elderwatch_checkin_${parsed.residentId}_${todayStr}`);
         if (existingCheckin) {
           const pc = JSON.parse(existingCheckin);
           if (pc.status === 'ok') { setView('ok'); setCheckInTime(new Date(pc.timestamp)); langChosenRef.current = true; }
           else if (pc.status === 'not_ok') { setView('help'); setHelpTime(new Date(pc.timestamp)); langChosenRef.current = true; }
         }
+
+        // Fallback: read from Firestore if localStorage didn't have it
+        const readFromFirestore = async () => {
+          try {
+            const { db } = await import('../lib/firebase');
+            const { doc, getDoc } = await import('firebase/firestore');
+            const sastNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+            const today = sastNow.toISOString().split('T')[0];
+            const docId = `${deviceBinding.homeId}_${deviceBinding.residentId}_${today}`;
+            const snap = await getDoc(doc(db, 'checkins', docId));
+            if (snap.exists()) {
+              const data = snap.data();
+              localStorage.setItem(
+                `elderwatch_checkin_${deviceBinding.residentId}_${today}`,
+                JSON.stringify({ status: data.status, timestamp: data.timestamp })
+              );
+              if (data.status === 'ok') { setView('ok'); setCheckInTime(new Date(data.timestamp)); langChosenRef.current = true; }
+              else if (data.status === 'not_ok') { setView('help'); setHelpTime(new Date(data.timestamp)); langChosenRef.current = true; }
+            }
+          } catch (e) { console.error('[ElderWatch] Firestore fallback failed:', e); }
+        };
+        readFromFirestore();
 
         // If no language has been chosen yet, prompt for it now.
         // This covers the /link pairing flow where permanentResidentId
@@ -367,7 +386,7 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
   const reminderCanBeEnabled = reminderState === 'off' || reminderState === 'needs-install';
 
-  // Auto-bind from permanent URL or QR code (?pair=CODE)
+  // Auto-bind from permanent URL or pairing code (?pair=CODE)
   useEffect(() => {
     if (!permanentResidentId) return;
     console.log('[ElderWatch] Auto-bind triggered for:', permanentResidentId);
@@ -377,13 +396,13 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         const { doc, getDoc, setDoc, collection, query, where, getDocs } = await import('firebase/firestore');
 
         // If the URL contains a ?pair=CODE parameter, validate the code first
-        // before binding the device. This is what makes the QR code do
+        // before binding the device. This is what makes the pairing code do
         // link + pair in a single step.
         const urlParams = new URLSearchParams(window.location.search);
         const pairCode = urlParams.get('pair');
         let codeGeneratedAt: string | null = null;
         if (pairCode) {
-          console.log('[ElderWatch] QR-pair code detected:', pairCode);
+          console.log('[ElderWatch] Pairing code detected:', pairCode);
           const normalized = pairCode.trim().toUpperCase();
           // Verify the code belongs to this resident
           const r = await getDoc(doc(db, 'residents', permanentResidentId));
@@ -428,7 +447,7 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
         // Reject if code was regenerated since this client verified it
         if (codeGeneratedAt && rData.linkCodeGeneratedAt && rData.linkCodeGeneratedAt !== codeGeneratedAt) {
-          console.warn('[ElderWatch] Pairing code was revoked — a new QR code was generated. Please scan the latest QR code.');
+          console.warn('[ElderWatch] Pairing code was revoked — a new code was generated. Please ask staff for the latest code.');
           return;
         }
 
@@ -557,15 +576,17 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
     try {
       setSubmitting(true);
-      localStorage.setItem(`elderwatch_checkin_${resId}_${now.toISOString().split('T')[0]}`, JSON.stringify({ status: 'ok', timestamp: now.toISOString() }));
+      const sastNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      const todayStr = sastNow.toISOString().split('T')[0];
+      localStorage.setItem(`elderwatch_checkin_${resId}_${todayStr}`, JSON.stringify({ status: 'ok', timestamp: now.toISOString() }));
 
       // Direct Firestore write - bypass any abstraction
       const { db } = await import('../lib/firebase');
       const { doc, setDoc } = await import('firebase/firestore');
 
       // SAST date
-      const sastNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
-      const today = sastNow.toISOString().split('T')[0];
+      const sastNow2 = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+      const today = sastNow2.toISOString().split('T')[0];
       const docId = `${hId}_${resId}_${today}`;
 
       console.log('[ElderWatch] Writing to Firestore doc:', docId);
@@ -602,14 +623,16 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
     try {
       setSubmitting(true);
-      localStorage.setItem(`elderwatch_checkin_${resId}_${now.toISOString().split('T')[0]}`, JSON.stringify({ status: 'not_ok', timestamp: now.toISOString() }));
+      const sastNowHelp = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      const todayStrHelp = sastNowHelp.toISOString().split('T')[0];
+      localStorage.setItem(`elderwatch_checkin_${resId}_${todayStrHelp}`, JSON.stringify({ status: 'not_ok', timestamp: now.toISOString() }));
 
       // Direct Firestore write
       const { db } = await import('../lib/firebase');
       const { doc, setDoc } = await import('firebase/firestore');
 
-      const sastNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
-      const today = sastNow.toISOString().split('T')[0];
+      const sastNowHelp2 = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+      const today = sastNowHelp2.toISOString().split('T')[0];
       const docId = `${hId}_${resId}_${today}`;
 
       await setDoc(doc(db, 'checkins', docId), {
@@ -642,15 +665,17 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
     try {
       setSubmitting(true);
-      localStorage.setItem(`elderwatch_checkin_${resId}_${now.toISOString().split('T')[0]}`, JSON.stringify({ status: 'ok', timestamp: now.toISOString() }));
+      const sastNowFine = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      const todayStrFine = sastNowFine.toISOString().split('T')[0];
+      localStorage.setItem(`elderwatch_checkin_${resId}_${todayStrFine}`, JSON.stringify({ status: 'ok', timestamp: now.toISOString() }));
 
       // Direct Firestore write - update to OK status
       const { db } = await import('../lib/firebase');
       const { doc, setDoc } = await import('firebase/firestore');
 
       // SAST date
-      const sastNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
-      const today = sastNow.toISOString().split('T')[0];
+      const sastNowFine2 = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+      const today = sastNowFine2.toISOString().split('T')[0];
       const docId = `${hId}_${resId}_${today}`;
 
       await setDoc(doc(db, 'checkins', docId), {
