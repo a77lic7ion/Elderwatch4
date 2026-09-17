@@ -451,12 +451,18 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         }
 
         // Mark as linked AND clear the one-time code (it's been used)
-        if (!rData.isDeviceLinked || rData.oneTimeLinkCode) {
+        // Only link if a valid oneTimeLinkCode exists — don't re-link devices
+        // that were deliberately unlinked by staff (code set to null)
+        if (rData.oneTimeLinkCode) {
           await setDoc(doc(db, 'residents', permanentResidentId), {
             isDeviceLinked: true,
             linkedAt: new Date().toISOString(),
             oneTimeLinkCode: null,
           }, { merge: true });
+        } else if (!rData.isDeviceLinked) {
+          // No code and not linked — staff unlinked this device, don't re-pair
+          console.warn('[ElderWatch] Resident has no link code and is not linked — refusing to auto-repair');
+          return;
         }
 
         localStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
