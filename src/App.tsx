@@ -53,14 +53,8 @@ export default function App() {
         } catch {}
       }
 
-      // Resident APK (PWA/TWA): NEVER show admin — always go to link or checkin.
-      // Only the web browser at /admin should show the admin panel.
+      // Resident phone: NEVER show admin, period.
       if (path === '/admin') {
-        // If there's a staff session in sessionStorage, allow admin (browser login).
-        // Otherwise redirect to link (resident APK should never see admin).
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('elderwatch_staff_auth')) {
-          return 'admin';
-        }
         return 'link';
       }
 
