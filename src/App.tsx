@@ -7,6 +7,7 @@ import { OfflineIndicator } from './components/PWAInstallButton';
 import { ThemeToggle, useAppTheme } from './components/ThemeToggle';
 import { StaffUser, Home, DeviceBinding } from './types';
 import { auth, logout, onAuthChange } from './lib/firebase';
+import { loadBinding } from './lib/device-storage';
 
 export default function App() {
   const isPWA = typeof window !== 'undefined' && 
@@ -97,6 +98,21 @@ export default function App() {
     }
     return null;
   });
+
+  // If localStorage was cleared by TWA, restore binding from IndexedDB
+  useEffect(() => {
+    if (currentRoute === 'link' && !localStorage.getItem('elderwatch_device_binding')) {
+      loadBinding().then((binding) => {
+        if (binding && binding.residentId) {
+          localStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
+          const checkinUrl = `/checkin/${binding.residentId}`;
+          localStorage.setItem('ew_pwa_checkin_url', checkinUrl);
+          window.history.replaceState({}, '', checkinUrl);
+          setCurrentRoute('checkin');
+        }
+      });
+    }
+  }, []);
 
   const [staffToken, setStaffToken] = useState<string | null>(null);
   const [staffUser, setStaffUser] = useState<StaffUser | null>(null);

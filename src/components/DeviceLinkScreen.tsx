@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Smartphone, CheckCircle, Shield, AlertCircle, ArrowRight, Home } from 'lucide-react';
 import { DeviceBinding } from '../types';
 import { db } from '../lib/firebase';
+import { saveBinding } from '../lib/device-storage';
 import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface DeviceLinkScreenProps {
@@ -126,6 +127,7 @@ export const DeviceLinkScreen: React.FC<DeviceLinkScreenProps> = ({
 
       localStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
       sessionStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
+      saveBinding(binding);
       onLinkedSuccess(binding);
     } catch {
       setError('Failed to bind device due to a connection issue.');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DeviceBinding } from '../types';
 import { saveCheckinToFirestore } from '../lib/firebase';
+import { loadBinding } from '../lib/device-storage';
 import {
   ReminderState,
   REMINDER_TIME_SAST,
@@ -178,7 +179,17 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         try { parsed = JSON.parse(saved); } catch {}
       }
 
-      // If no binding in localStorage but we have a resident ID from the URL,
+      // Try IndexedDB if localStorage was cleared by TWA
+      if (!parsed) {
+        const idbBinding = await loadBinding();
+        if (idbBinding && idbBinding.residentId) {
+          parsed = idbBinding;
+          localStorage.setItem('elderwatch_device_binding', JSON.stringify(parsed));
+          console.log('[ElderWatch] Restored binding from IndexedDB:', parsed.residentName);
+        }
+      }
+
+      // If no binding anywhere but we have a resident ID from the URL,
       // reconstruct the binding from the server
       if (!parsed && permanentResidentId) {
         try {
