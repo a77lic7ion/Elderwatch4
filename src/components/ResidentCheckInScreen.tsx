@@ -107,6 +107,7 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
   const [deviceBinding, setDeviceBinding] = useState<DeviceBinding | null>(null);
   const [residentProfile, setResidentProfile] = useState<ResidentProfile>(DEFAULT_RESIDENT);
   const [view, setView] = useState<ViewState>('morning');
+  const [loading, setLoading] = useState(true);
   const savedLang = (() => {
     try { const s = localStorage.getItem('ew_lang'); return (s === 'af' || s === 'en') ? s : 'en'; } catch { return 'en'; }
   })();
@@ -164,12 +165,33 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
     flashTimerRef.current = setTimeout(() => setFlashKind(null), 1100);
   }, []);
 
-  // Load device binding
+  // Load device binding — verify against server FIRST, then render
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('elderwatch_device_binding');
-      if (saved) {
+    const load = async () => {
+      try {
+        const saved = localStorage.getItem('elderwatch_device_binding');
+        if (!saved) {
+          // No binding — go to link screen
+          if (onNavigateToLink) onNavigateToLink();
+          return;
+        }
+
         const parsed: DeviceBinding = JSON.parse(saved);
+
+        // Verify pairing is still valid on the server BEFORE rendering anything
+        const { db } = await import('../lib/firebase');
+        const { doc, getDoc } = await import('firebase/firestore');
+        const residentSnap = await getDoc(doc(db, 'residents', parsed.residentId));
+        if (!residentSnap.exists() || !residentSnap.data().isDeviceLinked) {
+          console.warn('[ElderWatch] Device unpaired on server — going to link screen');
+          localStorage.removeItem('elderwatch_device_binding');
+          localStorage.removeItem('ew_lang');
+          localStorage.removeItem('ew_pwa_checkin_url');
+          if (onNavigateToLink) onNavigateToLink();
+          return;
+        }
+
+        // Pairing is valid — set up resident data
         setDeviceBinding(parsed);
         const nameParts = parsed.residentName.split(' ');
         const initials = nameParts.length > 1 ? `${nameParts[0][0]}${nameParts[1][0]}` : nameParts[0].substring(0, 2);
@@ -184,31 +206,9 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
           phone: '',
         });
 
-        // Update document title for PWA home screen shortcut
         document.title = `${firstName} - Room ${parsed.roomNumber}`;
 
-        // Verify device is still paired — admin may have rotated the link code
-        // which sets isDeviceLinked: false on the server
-        const verifyStillPaired = async () => {
-          try {
-            const { db } = await import('../lib/firebase');
-            const { doc, getDoc } = await import('firebase/firestore');
-            const residentSnap = await getDoc(doc(db, 'residents', parsed.residentId));
-            if (!residentSnap.exists() || !residentSnap.data().isDeviceLinked) {
-              console.warn('[ElderWatch] Device has been unpaired — clearing local binding and redirecting to link screen');
-              localStorage.removeItem('elderwatch_device_binding');
-              localStorage.removeItem('ew_lang');
-              localStorage.removeItem('ew_pwa_checkin_url');
-              setDeviceBinding(null);
-              setResidentProfile(null);
-              if (onNavigateToLink) onNavigateToLink();
-            }
-          } catch (e) {
-            console.error('[ElderWatch] Failed to verify pairing status:', e);
-          }
-        };
-        verifyStillPaired();
-
+        // Check today's check-in status from localStorage first
         const todayStr = new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString().split('T')[0];
         const existingCheckin = localStorage.getItem(`elderwatch_checkin_${parsed.residentId}_${todayStr}`);
         if (existingCheckin) {
@@ -218,38 +218,34 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         }
 
         // Fallback: read from Firestore if localStorage didn't have it
-        const readFromFirestore = async () => {
-          try {
-            const { db } = await import('../lib/firebase');
-            const { doc, getDoc } = await import('firebase/firestore');
-            const sastNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
-            const today = sastNow.toISOString().split('T')[0];
-            const docId = `${parsed.homeId}_${parsed.residentId}_${today}`;
-            const snap = await getDoc(doc(db, 'checkins', docId));
-            if (snap.exists()) {
-              const data = snap.data();
-              localStorage.setItem(
-                `elderwatch_checkin_${parsed.residentId}_${today}`,
-                JSON.stringify({ status: data.status, timestamp: data.timestamp })
-              );
-              if (data.status === 'ok') { setView('ok'); setCheckInTime(new Date(data.timestamp)); langChosenRef.current = true; }
-              else if (data.status === 'not_ok') { setView('help'); setHelpTime(new Date(data.timestamp)); langChosenRef.current = true; }
-            }
-          } catch (e) { console.error('[ElderWatch] Firestore fallback failed:', e); }
-        };
-        readFromFirestore();
+        try {
+          const sastNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+          const today = sastNow.toISOString().split('T')[0];
+          const docId = `${parsed.homeId}_${parsed.residentId}_${today}`;
+          const snap = await getDoc(doc(db, 'checkins', docId));
+          if (snap.exists()) {
+            const data = snap.data();
+            localStorage.setItem(
+              `elderwatch_checkin_${parsed.residentId}_${today}`,
+              JSON.stringify({ status: data.status, timestamp: data.timestamp })
+            );
+            if (data.status === 'ok') { setView('ok'); setCheckInTime(new Date(data.timestamp)); langChosenRef.current = true; }
+            else if (data.status === 'not_ok') { setView('help'); setHelpTime(new Date(data.timestamp)); langChosenRef.current = true; }
+          }
+        } catch (e) { console.error('[ElderWatch] Firestore fallback failed:', e); }
 
-        // If no language has been chosen yet, prompt for it now.
-        // Use existingCheckin (already read above) instead of view state,
-        // because setView() is async and view still reads 'morning' here.
+        // If no language has been chosen yet, prompt for it now
         const alreadyCheckedIn = existingCheckin && (JSON.parse(existingCheckin).status === 'ok' || JSON.parse(existingCheckin).status === 'not_ok');
         if (!localStorage.getItem('ew_lang') && !alreadyCheckedIn) {
           setView('lang_select');
         }
+      } catch (e) {
+        console.error('Error loading device state:', e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error('Error loading device state:', e);
-    }
+    };
+    load();
   }, []);
 
   // Real-time listener for Firestore checkin updates (morning reset, staff override, etc.)
@@ -705,6 +701,9 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
     const mo = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(now);
     dateText = `${wd} ${now.getDate()} ${mo}`;
   } catch { dateText = now.toDateString(); }
+
+  // Show nothing while verifying binding against the server
+  if (loading) return null;
 
   // Device unpaired screen
   if (view === 'unpaired') {
