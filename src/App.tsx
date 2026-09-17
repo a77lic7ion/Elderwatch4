@@ -65,6 +65,8 @@ export default function App() {
         return 'checkin';
       }
     }
+    // In a browser (not PWA/TWA), root goes to admin login
+    if (!isPWA) return 'admin';
     return 'link';
   });
 
