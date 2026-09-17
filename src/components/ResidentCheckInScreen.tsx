@@ -281,7 +281,16 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
             // Update view based on Firestore status
             if (status === 'awaiting') {
-              // Morning reset - go back to main screen
+              // Morning reset — but only go back to main screen if the user
+              // hasn't already checked in today (check localStorage).
+              const localCheckin = localStorage.getItem(`elderwatch_checkin_${deviceBinding.residentId}_${today}`);
+              if (localCheckin) {
+                const lc = JSON.parse(localCheckin);
+                if (lc.status === 'ok' || lc.status === 'not_ok') {
+                  // Already checked in today — don't reset the view
+                  return;
+                }
+              }
               setView('morning');
               setCheckInTime(null);
               setHelpTime(null);
