@@ -36,9 +36,11 @@ export default function App() {
       }
 
       // PWA launch: check if we have a saved resident check-in URL
+      // Only restore if the binding still exists — otherwise the device was unpaired
+      // and we should stay on the link screen.
       const savedResidentUrl = localStorage.getItem('ew_pwa_checkin_url');
-      if (savedResidentUrl) {
-        // In PWA mode, always restore the saved URL
+      const hasBinding = !!localStorage.getItem('elderwatch_device_binding');
+      if (savedResidentUrl && hasBinding) {
         if (isPWA || window.location.pathname === '/') {
           window.history.replaceState({}, '', savedResidentUrl);
           return 'checkin';
