@@ -167,19 +167,50 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
 
   // Load device binding — set profile from localStorage IMMEDIATELY,
   // then verify server in the background.
+  // If localStorage is empty (TWA clears it) but permanentResidentId is set
+  // from the URL, reconstruct the binding from the server.
   useEffect(() => {
-    const saved = localStorage.getItem('elderwatch_device_binding');
-    if (!saved) {
-      // No binding at all — go to link screen
-      if (onNavigateToLink) onNavigateToLink();
-      return;
-    }
+    const load = async () => {
+      let saved = localStorage.getItem('elderwatch_device_binding');
+      let parsed: DeviceBinding | null = null;
 
-    let parsed: DeviceBinding;
-    try { parsed = JSON.parse(saved); } catch {
-      if (onNavigateToLink) onNavigateToLink();
-      return;
-    }
+      if (saved) {
+        try { parsed = JSON.parse(saved); } catch {}
+      }
+
+      // If no binding in localStorage but we have a resident ID from the URL,
+      // reconstruct the binding from the server
+      if (!parsed && permanentResidentId) {
+        try {
+          const { db } = await import('../lib/firebase');
+          const { doc, getDoc } = await import('firebase/firestore');
+          const residentSnap = await getDoc(doc(db, 'residents', permanentResidentId));
+          if (residentSnap.exists()) {
+            const rData = residentSnap.data();
+            const homeDoc = await getDoc(doc(db, 'homes', rData.homeId));
+            const homeName = homeDoc.exists() ? (homeDoc.data() as any).name : 'Village';
+            parsed = {
+              residentId: permanentResidentId,
+              homeId: rData.homeId,
+              residentName: rData.name,
+              roomNumber: rData.roomNumber,
+              unitNumber: rData.unitNumber,
+              homeName,
+              linkedAt: rData.linkedAt || new Date().toISOString(),
+            };
+            localStorage.setItem('elderwatch_device_binding', JSON.stringify(parsed));
+            console.log('[ElderWatch] Reconstructed binding from server for:', rData.name);
+          }
+        } catch (e) {
+          console.error('[ElderWatch] Failed to reconstruct binding:', e);
+        }
+      }
+
+      if (!parsed) {
+        // No binding anywhere — go to link screen
+        if (onNavigateToLink) onNavigateToLink();
+        return;
+      }
 
     // Set profile and binding IMMEDIATELY from localStorage — don't wait for server
     setDeviceBinding(parsed);
@@ -251,7 +282,9 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
       } catch (e) { console.error('[ElderWatch] Firestore fallback failed:', e); }
     };
     readFromFirestore();
-  }, []);
+    };
+    load();
+  }, [permanentResidentId]);
 
   // Real-time listener for Firestore checkin updates (morning reset, staff override, etc.)
   useEffect(() => {
