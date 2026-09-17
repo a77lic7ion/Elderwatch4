@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DeviceBinding } from '../types';
-import { saveCheckinToFirestore } from '../lib/firebase';
+import { saveCheckinToFirestore, ensureAnonymousAuth } from '../lib/firebase';
 import { loadBinding } from '../lib/device-storage';
 import {
   ReminderState,
@@ -172,6 +172,11 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
   // from the URL, reconstruct the binding from the server.
   useEffect(() => {
     const load = async () => {
+      // Ensure anonymous auth is active before any Firestore operations
+      try { await ensureAnonymousAuth(); } catch (e) {
+        console.warn('[ElderWatch] Anonymous auth failed:', e);
+      }
+
       let saved = localStorage.getItem('elderwatch_device_binding');
       let parsed: DeviceBinding | null = null;
 

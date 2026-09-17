@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, CheckCircle, Shield, AlertCircle, ArrowRight, Home } from 'lucide-react';
 import { DeviceBinding } from '../types';
-import { db } from '../lib/firebase';
+import { db, ensureAnonymousAuth } from '../lib/firebase';
 import { saveBinding } from '../lib/device-storage';
 import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 
@@ -98,6 +98,9 @@ export const DeviceLinkScreen: React.FC<DeviceLinkScreenProps> = ({
     try {
       const { resident } = verifyResult;
 
+      // Sign in anonymously FIRST — we need the auth UID before writing
+      const anonUser = await ensureAnonymousAuth();
+
       // Re-read resident at bind time to check if code was revoked
       const currentSnap = await getDoc(doc(db, 'residents', resident.id));
       if (currentSnap.exists()) {
@@ -109,11 +112,12 @@ export const DeviceLinkScreen: React.FC<DeviceLinkScreenProps> = ({
         }
       }
 
-      // Update resident document: mark as linked, clear the one-time code
+      // Update resident document: mark as linked, store auth UID, clear the one-time code
       await setDoc(doc(db, 'residents', resident.id), {
         isDeviceLinked: true,
         linkedAt: new Date().toISOString(),
         oneTimeLinkCode: null,
+        linkedAuthUid: anonUser.uid,
       }, { merge: true });
 
       const binding: DeviceBinding = {

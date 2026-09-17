@@ -144,6 +144,24 @@ export default async function handler(req, res) {
       }
     );
 
+    // 4. Write staffAuth mapping for Firestore security rules
+    const staffAuthDoc = {
+      fields: {
+        uid: { stringValue: uid },
+        email: { stringValue: email.toLowerCase() },
+        staffId: { stringValue: uid },
+        createdAt: { stringValue: new Date().toISOString() },
+      }
+    };
+    await fetch(
+      `https://firestore.googleapis.com/v1/projects/${SERVICE_ACCOUNT.project_id}/databases/(default)/documents/staffAuth/${uid}?updateMask.fieldPaths=uid&updateMask.fieldPaths=email&updateMask.fieldPaths=staffId&updateMask.fieldPaths=createdAt`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify(staffAuthDoc),
+      }
+    );
+
     return res.status(200).json({ success: true, user: { id: uid, email, name, role, homeId } });
   } catch (error) {
     console.error('Error creating staff:', error);

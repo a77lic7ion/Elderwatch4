@@ -4,7 +4,7 @@ import { StaffUser, Home } from '../types';
 import { ThemeToggle, useAppTheme } from './ThemeToggle';
 import { LegalFooter } from './LegalFooter';
 import { loginWithEmail, db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface StaffLoginScreenProps {
   onLoginSuccess: (token: string, user: StaffUser, home: Home) => void;
@@ -95,6 +95,19 @@ export const StaffLoginScreen: React.FC<StaffLoginScreenProps> = ({
         timezone: 'Africa/Johannesburg',
         createdAt: new Date().toISOString(),
       };
+
+      // Ensure staffAuth mapping exists for Firestore security rules
+      try {
+        await setDoc(doc(db, 'staffAuth', firebaseUser.uid), {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          staffId: firebaseUser.uid,
+          createdAt: new Date().toISOString(),
+        }, { merge: true });
+      } catch (e) {
+        console.warn('[ElderWatch] Could not create staffAuth mapping:', e);
+        // Non-fatal — rules may still allow access if staffAuth was created before
+      }
 
       onLoginSuccess(token, user, home);
     } catch (err: any) {

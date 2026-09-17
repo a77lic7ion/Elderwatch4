@@ -2,51 +2,148 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // System connection test doc
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
+    // Is this user a staff member? Checks the staffAuth mapping collection.
+    // Staff auth mapping is created on login in StaffLoginScreen.
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/staffAuth/$(request.auth.uid));
+    }
+
+    // Is this user the anonymous auth linked to this resident?
+    function isLinkedResident(residentId) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/residents/$(residentId)).data.linkedAuthUid
+           == request.auth.uid;
+    }
+
+    // Backwards compat: old resident without linkedAuthUid but already linked
+    function isOldLinkedResident(residentId) {
+      let r = get(/databases/$(database)/documents/residents/$(residentId)).data;
+      return r.linkedAuthUid == null && r.isDeviceLinked == true;
+    }
+
+    // ============================================================
+    // SYSTEM — read-only connection test
+    // ============================================================
     match /system/{docId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Homes collection
+    // ============================================================
+    // STAFF AUTH MAPPING — created by client on login, never deleted by client
+    // ============================================================
+    match /staffAuth/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================================
+    // HOMES — staff only
+    // ============================================================
     match /homes/{homeId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isStaff();
+      allow write: if isStaff();
     }
 
-    // Staff collection
+    // ============================================================
+    // STAFF — staff only
+    // ============================================================
     match /staff/{staffId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isStaff();
+      allow write: if isStaff();
     }
 
-    // Residents roster collection
+    // ============================================================
+    // RESIDENTS
+    // ============================================================
     match /residents/{residentId} {
-      allow read: if true;
-      allow write: if true;
+      // Read: staff can read all; linked residents can read their own;
+      // anyone authenticated can read unlinked (for pairing code verification)
+      allow read: if request.auth != null && (
+        isStaff()
+        || get(/databases/$(database)/documents/residents/$(residentId)).data.linkedAuthUid
+           == request.auth.uid
+        || get(/databases/$(database)/documents/residents/$(residentId)).data.linkedAuthUid == null
+      );
+
+      // Update: staff can update all; linked residents can update their own;
+      // pairing: unlinked resident being linked with this auth UID;
+      // backwards compat: old linked residents without linkedAuthUid
+      allow update: if request.auth != null && (
+        isStaff()
+        || get(/databases/$(database)/documents/residents/$(residentId)).data.linkedAuthUid
+           == request.auth.uid
+        || (get(/databases/$(database)/documents/residents/$(residentId)).data.linkedAuthUid == null)
+        || isOldLinkedResident(residentId)
+      );
+
+      // Create/Delete: staff only
+      allow create: if isStaff();
+      allow delete: if isStaff();
     }
 
-    // Daily check-ins collection
+    // ============================================================
+    // CHECK-INS
+    // ============================================================
     match /checkins/{checkinId} {
-      allow read: if true;
-      allow write: if true;
+      // Staff can read/write all checkins for their home
+      // Linked residents can read/write their own checkins
+      // Checkin doc IDs are: {homeId}_{residentId}_{date}
+      allow read: if request.auth != null && (
+        isStaff()
+        || isLinkedResidentForCheckin(checkinId)
+        || isOldLinkedResidentForCheckin(checkinId)
+      );
+      allow write: if request.auth != null && (
+        isStaff()
+        || isLinkedResidentForCheckin(checkinId)
+        || isOldLinkedResidentForCheckin(checkinId)
+      );
     }
 
-    // Job logs collection
+    // Helper: extract residentId from checkin doc ID and check auth
+    function isLinkedResidentForCheckin(checkinId) {
+      let parts = checkinId.split('_');
+      let residentId = parts[1];
+      let resident = get(/databases/$(database)/documents/residents/$(residentId)).data;
+      return resident.linkedAuthUid == request.auth.uid;
+    }
+
+    function isOldLinkedResidentForCheckin(checkinId) {
+      let parts = checkinId.split('_');
+      let residentId = parts[1];
+      let resident = get(/databases/$(database)/documents/residents/$(residentId)).data;
+      return resident.linkedAuthUid == null && resident.isDeviceLinked == true;
+    }
+
+    // ============================================================
+    // JOB LOGS — server only (Admin SDK bypasses rules)
+    // ============================================================
     match /jobLogs/{logId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isStaff();
+      allow write: if false;
     }
 
-    // Push logs collection
+    // ============================================================
+    // PUSH LOGS — server only
+    // ============================================================
     match /pushLogs/{logId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isStaff();
+      allow write: if false;
     }
 
-    // Device bindings collection
+    // ============================================================
+    // DEVICE BINDINGS (unused collection — block entirely)
+    // ============================================================
     match /device_bindings/{bindingId} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

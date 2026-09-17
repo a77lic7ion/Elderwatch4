@@ -14,7 +14,9 @@ import {
 import {
   initializeAuth,
   inMemoryPersistence,
+  browserLocalPersistence,
   signInWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   onAuthStateChanged,
   onIdTokenChanged,
@@ -49,10 +51,13 @@ export const firebaseConfig = {
 };
 
 // =================== PER-TAB FIREBASE APP ===================
-// Each browser tab needs its own Firebase app instance with its own Auth instance
-// using inMemoryPersistence so it doesn't sync across tabs via IndexedDB.
-// This allows multiple staff to be signed in simultaneously in different tabs,
-// while each tab still uses real Firebase Auth for security/validation.
+// Admin app (browser): per-tab isolation with inMemoryPersistence.
+// Resident app (PWA/TWA): fixed app name with browserLocalPersistence
+// so anonymous auth survives app exits.
+
+const isResidentApp = typeof window !== 'undefined' &&
+  (window.location.hostname.includes('elderwatch-resident') ||
+   window.matchMedia('(display-mode: standalone)').matches);
 
 const TAB_ID =
   (typeof window !== 'undefined' && window.name) ||
@@ -63,7 +68,8 @@ if (typeof window !== 'undefined' && !window.name) {
   try { window.name = TAB_ID; } catch { /* ignore */ }
 }
 
-const APP_NAME = `elderwatch-${TAB_ID}`;
+// Resident app uses a FIXED app name so browserLocalPersistence can persist auth
+const APP_NAME = isResidentApp ? 'elderwatch-resident' : `elderwatch-${TAB_ID}`;
 
 let _app: FirebaseApp;
 if (getApps().some((a) => a.name === APP_NAME)) {
@@ -83,16 +89,29 @@ export const app: FirebaseApp = _app;
 // but using our per-tab app keeps it isolated too — safer for multi-tenant data ops)
 export const db: Firestore = getFirestore(_app);
 
-// =================== PER-TAB FIREBASE AUTH ===================
-// inMemoryPersistence means: this tab's auth state is held in memory only.
-// It is NOT written to IndexedDB and NOT shared with other tabs.
-// When the tab is closed, the auth state is gone. The user will need to
-// sign in again next time. This is the key to allowing multiple users
-// to be signed in simultaneously across different tabs/windows.
+// =================== FIREBASE AUTH ===================
+// Admin app: inMemoryPersistence (per-tab, session dies on tab close)
+// Resident app: browserLocalPersistence (persists anonymous auth across app exits)
 
 export const auth: Auth = initializeAuth(_app, {
-  persistence: inMemoryPersistence,
+  persistence: isResidentApp ? browserLocalPersistence : inMemoryPersistence,
 });
+
+/**
+ * Sign in anonymously for the resident app. Returns the current user.
+ * The UID is stored on the resident doc as 'linkedAuthUid' during pairing.
+ * On subsequent opens, the persisted anonymous auth is restored automatically.
+ */
+export async function ensureAnonymousAuth(): Promise<FirebaseUser> {
+  if (auth.currentUser) return auth.currentUser;
+  const cred = await signInAnonymously(auth);
+  return cred.user;
+}
+
+/** True if the current auth session is anonymous (resident). */
+export function isAnonymousUser(): boolean {
+  return auth.currentUser?.isAnonymous ?? false;
+}
 
 // Auth helper functions
 export async function loginWithEmail(email: string, password: string) {
