@@ -1,4 +1,4 @@
-const CACHE_NAME = 'elderwatch-v6';
+const CACHE_NAME = 'elderwatch-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -98,15 +98,26 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const targetUrl = event.notification.data?.url || '/';
+  const origin = self.location.origin;
+  // Build absolute URL — targetUrl may be relative like /checkin/res-xxx
+  const absoluteUrl = targetUrl.startsWith('http') ? targetUrl : origin + targetUrl;
+
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((windowClients) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // If there's already an open window (the TWA), focus it and navigate
       for (const client of windowClients) {
-        if (client.url.includes(targetUrl) && 'focus' in client) {
-          return client.focus();
+        if ('focus' in client) {
+          client.focus();
+          // Navigate the existing window to the target URL
+          if ('navigate' in client) {
+            return client.navigate(absoluteUrl);
+          }
+          return;
         }
       }
+      // No existing window — open a new one (will launch the TWA)
       if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
+        return clients.openWindow(absoluteUrl);
       }
     })
   );
