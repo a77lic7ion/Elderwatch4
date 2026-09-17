@@ -14,6 +14,7 @@ export const DeviceLinkCodeModal: React.FC<DeviceLinkCodeModalProps> = ({
   onCodeRegenerated,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [currentCode, setCurrentCode] = useState(resident.oneTimeLinkCode || '');
   const [autoGenerating, setAutoGenerating] = useState(!resident.oneTimeLinkCode);
@@ -44,6 +45,14 @@ export const DeviceLinkCodeModal: React.FC<DeviceLinkCodeModalProps> = ({
     navigator.clipboard.writeText(currentCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCopyLink = () => {
+    if (!currentCode) return;
+    const url = `https://elderwatch-resident.vercel.app/link?code=${encodeURIComponent(currentCode)}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   // Rotate the code — old codes immediately stop working.
@@ -104,6 +113,17 @@ export const DeviceLinkCodeModal: React.FC<DeviceLinkCodeModalProps> = ({
                     {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'Copied' : 'Copy Code'}
                   </button>
+                  <button
+                    onClick={handleCopyLink}
+                    className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedLink ? 'Copied' : 'Copy iPhone Link'}
+                  </button>
+                  <p className="text-[10px] text-emerald-600 text-center">
+                    Send this link to the resident's family. They open it in Safari,<br />
+                    tap Share → Add to Home Screen, then enter the code above.
+                  </p>
                 </div>
               ) : (
                 <div className="w-56 h-28 rounded-xl border-2 border-dashed border-emerald-300 flex flex-col items-center justify-center text-emerald-600 text-xs gap-2">
