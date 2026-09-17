@@ -37,6 +37,21 @@ export default function App() {
         } catch { /* corrupt binding — fall through to link */ }
       }
 
+      // Also check sessionStorage (backup for TWA localStorage clearing)
+      const sessionBinding = sessionStorage.getItem('elderwatch_device_binding');
+      if (sessionBinding) {
+        try {
+          const parsed = JSON.parse(sessionBinding);
+          if (parsed.residentId) {
+            const checkinUrl = `/checkin/${parsed.residentId}`;
+            window.history.replaceState({}, '', checkinUrl);
+            localStorage.setItem('ew_pwa_checkin_url', checkinUrl);
+            localStorage.setItem('elderwatch_device_binding', sessionBinding);
+            return 'checkin';
+          }
+        } catch {}
+      }
+
       // PWA/TWA: never show admin — always link or checkin
       if (path === '/admin') {
         if (isPWA) return 'link';
@@ -179,6 +194,7 @@ export default function App() {
     window.history.replaceState({}, '', checkinUrl);
     localStorage.setItem('ew_pwa_checkin_url', checkinUrl);
     localStorage.setItem('ew_lang', 'en');
+    sessionStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
     setPermanentResidentId(binding.residentId);
     setCurrentRoute('checkin');
   };

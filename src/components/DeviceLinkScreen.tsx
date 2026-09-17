@@ -125,6 +125,7 @@ export const DeviceLinkScreen: React.FC<DeviceLinkScreenProps> = ({
       };
 
       localStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
+      sessionStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
       onLinkedSuccess(binding);
     } catch {
       setError('Failed to bind device due to a connection issue.');
