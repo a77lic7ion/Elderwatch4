@@ -195,12 +195,13 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
             const { doc, getDoc } = await import('firebase/firestore');
             const residentSnap = await getDoc(doc(db, 'residents', parsed.residentId));
             if (!residentSnap.exists() || !residentSnap.data().isDeviceLinked) {
-              console.warn('[ElderWatch] Device has been unpaired — clearing local binding');
+              console.warn('[ElderWatch] Device has been unpaired — clearing local binding and redirecting to link screen');
               localStorage.removeItem('elderwatch_device_binding');
               localStorage.removeItem('ew_lang');
+              localStorage.removeItem('ew_pwa_checkin_url');
               setDeviceBinding(null);
               setResidentProfile(null);
-              setView('unpaired');
+              if (onNavigateToLink) onNavigateToLink();
             }
           } catch (e) {
             console.error('[ElderWatch] Failed to verify pairing status:', e);
@@ -333,12 +334,13 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         const { doc, getDoc } = await import('firebase/firestore');
         const snap = await getDoc(doc(db, 'residents', deviceBinding.residentId));
         if (!snap.exists() || !snap.data().isDeviceLinked) {
-          console.warn('[ElderWatch] Device unpaired during session — clearing binding');
+          console.warn('[ElderWatch] Device unpaired during session — redirecting to link screen');
           localStorage.removeItem('elderwatch_device_binding');
           localStorage.removeItem('ew_lang');
+          localStorage.removeItem('ew_pwa_checkin_url');
           setDeviceBinding(null);
           setResidentProfile(null);
-          setView('unpaired');
+          if (onNavigateToLink) onNavigateToLink();
         }
       } catch {}
     }, 60000); // check every 60 seconds
