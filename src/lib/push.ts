@@ -15,7 +15,7 @@ import { doc, setDoc } from 'firebase/firestore';
 const env = ((import.meta as any).env || {}) as Record<string, string | undefined>;
 
 export const VAPID_PUBLIC_KEY =
-  env.VITE_VAPID_PUBLIC_KEY || 'BK9t_gSFfc90DYOFwD2ZaWbjBid7xxUkNuq6g19-8hz7VfIdKm-KymQ8YBGzaXUQHGjfPw4fJY5F0r5spb2MyGw';
+  env.VITE_VAPID_PUBLIC_KEY || 'BNSw3oeYmIWReuPu7EtNY3nbAHqCL2TMocP7WafK4SY_NRZwFP4IHwdaTRcDyVg3-al_ys7dL7-HQwnJRBurQcs';
 
 export const REMINDER_TIME_SAST = '08:00';
 
