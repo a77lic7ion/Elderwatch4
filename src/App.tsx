@@ -185,11 +185,12 @@ export default function App() {
     return () => unsubscribe();
   }, []);  // eslint-disable-linereact-hooks/exhaustive-deps
 
-  // Handle PWA mode - ensure saved URL is restored
+  // Handle PWA mode - ensure saved URL is restored ONLY if binding is still valid
   useEffect(() => {
-    if (isPWA) {
+    if (isPWA && bindingVerified) {
       const savedUrl = localStorage.getItem('ew_pwa_checkin_url');
-      if (savedUrl && window.location.pathname === '/') {
+      const hasBinding = !!localStorage.getItem('elderwatch_device_binding');
+      if (savedUrl && hasBinding && window.location.pathname === '/') {
         console.log('[ElderWatch] PWA mode - restoring URL:', savedUrl);
         window.history.replaceState({}, '', savedUrl);
         const match = savedUrl.match(/^\/checkin\/(.+)$/);
@@ -199,7 +200,7 @@ export default function App() {
         }
       }
     }
-  }, [isPWA]);
+  }, [isPWA, bindingVerified]);
 
   // Listen for browser URL back/forward
   useEffect(() => {
