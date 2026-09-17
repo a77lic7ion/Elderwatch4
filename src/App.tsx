@@ -53,9 +53,9 @@ export default function App() {
         } catch {}
       }
 
-      // Resident phone: NEVER show admin, period.
+      // /admin is for the staff web app only — resident APK is on a different origin
       if (path === '/admin') {
-        return 'link';
+        return 'admin';
       }
 
       // Restore saved check-in URL if binding exists
