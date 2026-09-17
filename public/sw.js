@@ -1,4 +1,4 @@
-const CACHE_NAME = 'elderwatch-v4';
+const CACHE_NAME = 'elderwatch-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
