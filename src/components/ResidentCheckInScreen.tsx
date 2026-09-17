@@ -387,10 +387,12 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
       : reminderState === 'needs-install'
       ? 'Add ElderWatch to the Home Screen, then turn reminders on'
       : reminderState === 'denied'
-      ? 'Notifications are blocked in this phone\'s settings'
+      ? 'Notifications blocked — tap to retry'
+      : reminderState === 'on'
+      ? 'Daily reminders are ON — tap to turn off'
       : '';
 
-  const reminderCanBeEnabled = reminderState === 'off' || reminderState === 'needs-install';
+  const reminderCanBeEnabled = reminderState === 'off' || reminderState === 'needs-install' || reminderState === 'denied';
 
   // Auto-bind from permanent URL or pairing code (?pair=CODE)
   useEffect(() => {
@@ -926,16 +928,16 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
             {/* Reminder status — disappears once reminders are switched on */}
             {reminderHint && view !== 'linked' && (
               <button
-                onClick={reminderCanBeEnabled ? handleEnableReminders : undefined}
-                disabled={!reminderCanBeEnabled || reminderBusy}
+                onClick={reminderState === 'on' ? handleDisableReminders : (reminderCanBeEnabled ? handleEnableReminders : undefined)}
+                disabled={reminderBusy}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left',
                   padding: '10px 14px', borderRadius: '12px',
-                  background: reminderCanBeEnabled ? 'rgba(236,201,75,0.2)' : 'rgba(255,255,255,0.06)',
-                  border: reminderCanBeEnabled ? '2px solid #ECC94B' : '1px solid rgba(255,255,255,0.15)',
-                  color: reminderCanBeEnabled ? '#ECC94B' : 'rgba(255,255,255,0.6)',
+                  background: reminderState === 'on' ? 'rgba(21,122,76,0.2)' : (reminderCanBeEnabled ? 'rgba(236,201,75,0.2)' : 'rgba(255,255,255,0.06)'),
+                  border: reminderState === 'on' ? '2px solid #157A4C' : (reminderCanBeEnabled ? '2px solid #ECC94B' : '1px solid rgba(255,255,255,0.15)'),
+                  color: reminderState === 'on' ? '#4ADE80' : (reminderCanBeEnabled ? '#ECC94B' : 'rgba(255,255,255,0.6)'),
                   fontSize: '14px', fontWeight: 600,
-                  cursor: reminderCanBeEnabled ? 'pointer' : 'default',
+                  cursor: (reminderState === 'on' || reminderCanBeEnabled) ? 'pointer' : 'default',
                   marginBottom: '12px', flexShrink: 0,
                   opacity: reminderBusy ? 0.6 : 1
                 }}
