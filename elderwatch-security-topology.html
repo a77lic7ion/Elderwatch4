@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderWatch — Security &amp; Topology</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #020617; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; padding: 32px; min-height: 100vh; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 11px; color: #64748b; margin-bottom: 32px; }
+  .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 24px; margin-bottom: 24px; }
+  .card h2 { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.cyan { background: #22d3ee; }
+  .dot.emerald { background: #34d399; }
+  .dot.violet { background: #a78bfa; }
+  .dot.rose { background: #fb7185; }
+  .dot.amber { background: #fbbf24; }
+  .dot.orange { background: #fb923c; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 1px solid #1e293b; color: #94a3b8; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 8px 12px; border-bottom: 1px solid #1e293b1a; vertical-align: top; }
+  td:first-child { font-weight: 600; color: #e2e8f0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+  .badge.green { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+  .badge.red { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .badge.amber { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+  .badge.cyan { background: rgba(34,211,238,0.15); color: #22d3ee; border: 1px solid rgba(34,211,238,0.3); }
+  .section-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; font-weight: 600; }
+  ul { list-style: none; padding: 0; }
+  ul li { padding: 4px 0; font-size: 11px; color: #cbd5e1; }
+  ul li::before { content: "→ "; color: #475569; }
+  .finding { padding: 10px 14px; border-radius: 8px; margin: 6px 0; font-size: 11px; }
+  .finding.critical { background: rgba(239,68,68,0.08); border-left: 3px solid #ef4444; }
+  .finding.warning { background: rgba(251,191,36,0.08); border-left: 3px solid #fbbf24; }
+  .finding.info { background: rgba(34,211,238,0.08); border-left: 3px solid #22d3ee; }
+  .finding strong { color: #f8fafc; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .footer { text-align: center; font-size: 9px; color: #334155; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<h1>ElderWatch — Security &amp; Application Topology</h1>
+<p class="subtitle">Generated 2026-09-17 · Firebase project elderwatch-14712 · Two Vercel deployments</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TOPOLOGY DIAGRAM -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card">
+<h2><span class="dot cyan"></span> Application Topology &amp; Communications</h2>
+<svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.3"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fb7185"/>
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="620" fill="#020617"/>
+  <rect width="900" height="620" fill="url(#grid)"/>
+
+  <!-- ═══ DEVICE LAYER ═══ -->
+  <text x="20" y="28" fill="#475569" font-size="9" font-family="JetBrains Mono" font-weight="600" letter-spacing="1">DEVICES</text>
+
+  <!-- Android TWA -->
+  <rect x="20" y="40" width="160" height="80" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+  <rect x="20" y="40" width="160" height="80" rx="6" fill="rgba(8,51,68,0.4)"/>
+  <text x="100" y="65" fill="#22d3ee" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">Android TWA</text>
+  <text x="100" y="80" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">com.elderwatch.resident</text>
+  <text x="100" y="93" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Bubblewrap APK</text>
+  <text x="100" y="108" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Service Worker + IndexedDB</text>
+
+  <!-- iPhone PWA -->
+  <rect x="200" y="40" width="160" height="80" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+  <rect x="200" y="40" width="160" height="80" rx="6" fill="rgba(8,51,68,0.4)"/>
+  <text x="280" y="65" fill="#22d3ee" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">iPhone PWA</text>
+  <text x="280" y="80" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Safari → Add to Home</text>
+  <text x="280" y="93" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">iOS 16.4+ required</text>
+  <text x="280" y="108" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Web Push via SW</text>
+
+  <!-- Staff Browser -->
+  <rect x="540" y="40" width="160" height="80" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+  <rect x="540" y="40" width="160" height="80" rx="6" fill="rgba(6,78,59,0.4)"/>
+  <text x="620" y="65" fill="#34d399" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">Staff Browser</text>
+  <text x="620" y="80" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Any modern browser</text>
+  <text x="620" y="93" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Desktop / Mobile</text>
+  <text x="620" y="108" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Firebase Auth session</text>
+
+  <!-- ═══ VERCEL LAYER ═══ -->
+  <text x="20" y="160" fill="#475569" font-size="9" font-family="JetBrains Mono" font-weight="600" letter-spacing="1">VERCEL CDN + EDGE</text>
+
+  <!-- Resident Vercel -->
+  <rect x="110" y="170" width="200" height="90" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="110" y="170" width="200" height="90" rx="6" fill="rgba(120,53,15,0.3)"/>
+  <text x="210" y="195" fill="#fbbf24" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">elderwatch-resident</text>
+  <text x="210" y="210" fill="#fbbf24" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">.vercel.app</text>
+  <text x="210" y="228" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Vite SPA + sw.js</text>
+  <text x="210" y="241" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">TLS via Let's Encrypt</text>
+  <text x="210" y="254" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">HSTS · auto-renew</text>
+
+  <!-- Admin Vercel -->
+  <rect x="490" y="170" width="200" height="90" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+  <rect x="490" y="170" width="200" height="90" rx="6" fill="rgba(6,78,59,0.4)"/>
+  <text x="590" y="195" fill="#34d399" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">elderwatch3</text>
+  <text x="590" y="210" fill="#34d399" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">.vercel.app</text>
+  <text x="590" y="228" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Vite SPA + api/cron/*</text>
+  <text x="590" y="241" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">TLS via Let's Encrypt</text>
+  <text x="590" y="254" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Serverless functions</text>
+
+  <!-- ═══ FIREBASE LAYER ═══ -->
+  <text x="20" y="300" fill="#475569" font-size="9" font-family="JetBrains Mono" font-weight="600" letter-spacing="1">FIREBASE (GOOGLE CLOUD)</text>
+
+  <!-- Firestore -->
+  <rect x="250" y="310" width="200" height="70" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <rect x="250" y="310" width="200" height="70" rx="6" fill="rgba(76,29,149,0.4)"/>
+  <text x="350" y="335" fill="#a78bfa" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">Cloud Firestore</text>
+  <text x="350" y="350" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">elderwatch-14712</text>
+  <text x="350" y="365" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">residents · homes · staff · checkins</text>
+
+  <!-- Firebase Auth -->
+  <rect x="530" y="310" width="160" height="70" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <rect x="530" y="310" width="160" height="70" rx="6" fill="rgba(76,29,149,0.4)"/>
+  <text x="610" y="335" fill="#a78bfa" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">Firebase Auth</text>
+  <text x="610" y="350" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Email/Password</text>
+  <text x="610" y="365" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">Staff only · inMemory</text>
+
+  <!-- ═══ PUSH LAYER ═══ -->
+  <text x="20" y="420" fill="#475569" font-size="9" font-family="JetBrains Mono" font-weight="600" letter-spacing="1">PUSH NOTIFICATIONS</text>
+
+  <!-- FCM -->
+  <rect x="50" y="430" width="180" height="70" rx="6" fill="#0f172a" stroke="#fb923c" stroke-width="1.5"/>
+  <rect x="50" y="430" width="180" height="70" rx="6" fill="rgba(251,146,60,0.3)"/>
+  <text x="140" y="455" fill="#fb923c" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">Firebase Cloud Msg</text>
+  <text x="140" y="470" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">fcm.googleapis.com</text>
+  <text x="140" y="483" fill="#94a3b8" font-size="8" font-family="JetBrains Mono" text-anchor="middle">VAPID + Web Push Protocol</text>
+
+  <!-- Cron -->
+  <rect x="300" y="430" width="200" height="70" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="300" y="430" width="200" height="70" rx="6" fill="rgba(120,53,15,0.3)"/>
+  <text x="400" y="455" fill="#fbbf24" font-size="12" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">Vercel Cron Jobs</text>
+  <text x="400" y="470" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">daily-reset: 22:00 UTC</text>
+  <text x="400" y="483" fill="#64748b" font-size="8" font-family="JetBrains Mono" text-anchor="middle">reminder-push: 06:00 UTC (08:00 SAST)</text>
+
+  <!-- ═══ ARROWS ═══ -->
+  <!-- Device → Vercel (HTTPS) -->
+  <line x1="100" y1="120" x2="180" y2="170" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)"/>
+  <text x="120" y="148" fill="#22d3ee" font-size="7" font-family="JetBrains Mono">HTTPS</text>
+
+  <line x1="280" y1="120" x2="240" y2="170" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)"/>
+  <text x="270" y="148" fill="#22d3ee" font-size="7" font-family="JetBrains Mono">HTTPS</text>
+
+  <line x1="620" y1="120" x2="610" y2="170" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+  <text x="630" y="148" fill="#34d399" font-size="7" font-family="JetBrains Mono">HTTPS</text>
+
+  <!-- Vercel → Firestore (client SDK) -->
+  <line x1="210" y1="260" x2="320" y2="310" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="240" y="288" fill="#475569" font-size="7" font-family="JetBrains Mono">Client SDK</text>
+  <text x="240" y="298" fill="#475569" font-size="7" font-family="JetBrains Mono">HTTPS</text>
+
+  <line x1="590" y1="260" x2="420" y2="310" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="520" y="288" fill="#475569" font-size="7" font-family="JetBrains Mono">Client SDK</text>
+  <text x="520" y="298" fill="#475569" font-size="7" font-family="JetBrains Mono">HTTPS</text>
+
+  <!-- Vercel → Firebase Auth -->
+  <line x1="640" y1="260" x2="630" y2="310" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Vercel → FCM (push) -->
+  <line x1="180" y1="260" x2="140" y2="430" stroke="#fb923c" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-orange)"/>
+  <text x="145" y="360" fill="#fb923c" font-size="7" font-family="JetBrains Mono">Web Push</text>
+  <text x="145" y="370" fill="#fb923c" font-size="7" font-family="JetBrains Mono">VAPID signed</text>
+
+  <!-- Cron → Firestore -->
+  <line x1="380" y1="430" x2="370" y2="380" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="395" y="410" fill="#a78bfa" font-size="7" font-family="JetBrains Mono">REST API + SA creds</text>
+
+  <!-- Cron → FCM -->
+  <line x1="300" y1="455" x2="230" y2="455" stroke="#fb923c" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-orange)"/>
+
+  <!-- FCM → Device -->
+  <line x1="80" y1="430" x2="60" y2="120" stroke="#fb923c" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-orange)"/>
+  <text x="30" y="300" fill="#fb923c" font-size="7" font-family="JetBrains Mono" transform="rotate(-75,30,300)">Push delivery</text>
+
+  <!-- ═══ SECURITY BOUNDARY ═══ -->
+  <rect x="100" y="305" width="610" height="80" rx="12" fill="none" stroke="#fb7185" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="120" y="395" fill="#fb7185" font-size="8" font-family="JetBrains Mono" font-weight="600">SECURITY CONCERN: Firestore rules allow read, write: if true — all collections</text>
+
+  <!-- Legend -->
+  <text x="20" y="530" fill="#475569" font-size="9" font-family="JetBrains Mono" font-weight="600" letter-spacing="1">LEGEND</text>
+  <line x1="20" y1="545" x2="50" y2="545" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="58" y="548" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Resident device connection</text>
+  <line x1="20" y1="560" x2="50" y2="560" stroke="#34d399" stroke-width="1.5"/>
+  <text x="58" y="563" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Staff device connection</text>
+  <line x1="20" y1="575" x2="50" y2="575" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="58" y="578" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Push notification flow</text>
+  <line x1="20" y1="590" x2="50" y2="590" stroke="#fb7185" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="58" y="593" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Security boundary / concern</text>
+  <text x="300" y="548" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">All connections are <tspan fill="#22d3ee" font-weight="700">HTTPS/TLS 1.3</tspan> unless noted</text>
+  <text x="300" y="563" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Vercel provides automatic TLS certificates</text>
+  <text x="300" y="578" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">HSTS enabled on both domains</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TLS OVERVIEW -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card">
+<h2><span class="dot cyan"></span> TLS / Transport Security</h2>
+<table>
+  <thead>
+    <tr><th>Connection</th><th>Protocol</th><th>Certificate</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Device → elderwatch-resident.vercel.app</td>
+      <td>HTTPS / TLS 1.3</td>
+      <td>Let's Encrypt (auto-renewed by Vercel)</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Device → elderwatch3.vercel.app</td>
+      <td>HTTPS / TLS 1.3</td>
+      <td>Let's Encrypt (auto-renewed by Vercel)</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Browser/Firestore Client SDK → firestore.googleapis.com</td>
+      <td>HTTPS / TLS 1.3</td>
+      <td>Google Trust Services</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Browser → Firebase Auth (identitytoolkit.googleapis.com)</td>
+      <td>HTTPS / TLS 1.3</td>
+      <td>Google Trust Services</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Cron → Firestore REST API</td>
+      <td>HTTPS / TLS 1.3</td>
+      <td>Google Trust Services</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Cron / Browser → FCM (fcm.googleapis.com)</td>
+      <td>HTTPS / TLS 1.3</td>
+      <td>Google Trust Services</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Service Worker → Push endpoint (FCM)</td>
+      <td>HTTPS (Web Push Protocol)</td>
+      <td>Google Trust Services</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+    <tr>
+      <td>Vercel internal (serverless → edge)</td>
+      <td>HTTPS (internal backbone)</td>
+      <td>Vercel managed</td>
+      <td><span class="badge green">Secure</span></td>
+    </tr>
+  </tbody>
+</table>
+<p class="section-label">Summary</p>
+<ul>
+  <li>All external connections use HTTPS with TLS 1.3. No plaintext HTTP for data in transit.</li>
+  <li>Vercel automatically provisions and renews Let's Encrypt certificates for both custom domains.</li>
+  <li>HSTS is enabled on all Vercel deployments, forcing browsers to use HTTPS.</li>
+  <li>Google Cloud services (Firestore, Auth, FCM) use their own CA (Google Trust Services).</li>
+  <li>No custom certificates or certificate pinning is implemented.</li>
+  <li>Web Push uses the standard VAPID protocol for authentication between server and push service.</li>
+</ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECURITY FINDINGS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card">
+<h2><span class="dot rose"></span> Security Findings</h2>
+
+<p class="section-label">Critical</p>
+
+<div class="finding critical">
+  <strong>1. Firestore rules are wide open</strong><br/>
+  Every collection (<code>residents</code>, <code>homes</code>, <code>staff</code>, <code>checkins</code>, <code>pushLogs</code>, <code>jobLogs</code>, <code>device_bindings</code>) allows <code>read, write: if true</code>. Any client — including a resident's phone — can read/write ANY document, including staff records, other residents' data, and check-in history for all homes. This is the #1 issue to fix before real residents use the system.
+</div>
+
+<div class="finding critical">
+  <strong>2. No server-side authentication on resident operations</strong><br/>
+  Resident device binding is purely client-side (localStorage/IndexedDB). A technically savvy user could manipulate their <code>elderwatch_device_binding</code> to impersonate another resident. There is no Firebase Auth token or server-side session for resident check-ins — the Firestore client SDK writes directly with no auth context.
+</div>
+
+<p class="section-label">Warnings</p>
+
+<div class="finding warning">
+  <strong>3. VAPID private key in .env.local</strong><br/>
+  The VAPID private key is stored in <code>.env.local</code> (gitignored) locally and in Vercel environment variables. This is correct practice, but ensure the Vercel env var is restricted to Production only and not exposed in Preview deployments.
+</div>
+
+<div class="finding warning">
+  <strong>4. Firebase service account credentials</strong><br/>
+  <code>service-account.json</code> exists in two locations: the Elderwatch3 working copy and the Elderwatch4 project root. Both are gitignored. Ensure they are never committed. The cron jobs use these credentials via Vercel env vars (<code>FIREBASE_CLIENT_EMAIL</code>, <code>FIREBASE_PRIVATE_KEY</code>).
+</div>
+
+<div class="finding warning">
+  <strong>5. Staff auth uses inMemoryPersistence</strong><br/>
+  Firebase Auth is configured with <code>inMemoryPersistence</code> — the staff session lives only in the browser tab's memory. Closing the tab logs the staff member out. This is good for security but may be inconvenient. The session is also stored in <code>sessionStorage</code> as a backup.
+</div>
+
+<div class="finding warning">
+  <strong>6. No rate limiting on any endpoint</strong><br/>
+  The Vercel serverless functions (<code>daily-reset</code>, <code>reminder-push</code>) have no rate limiting beyond Vercel's built-in DDoS protection. The CRON_SECRET protects manual invocation, but the client-side Firestore writes have no throttling.
+</div>
+
+<p class="section-label">Informational</p>
+
+<div class="finding info">
+  <strong>7. TWA origin separation is working</strong><br/>
+  The resident APK (<code>elderwatch-resident.vercel.app</code>) and admin web app (<code>elderwatch3.vercel.app</code>) are on completely separate origins. Chrome's TWA does not share localStorage, sessionStorage, cookies, or service workers between them. This was the root cause of the routing bugs and is now correctly resolved.
+</div>
+
+<div class="finding info">
+  <strong>8. Web Push uses VAPID correctly</strong><br/>
+  Push subscriptions are authenticated with VAPID keys. The public key is embedded in the client bundle and set as a Vercel env var. The private key is only used server-side in the cron job. Dead subscriptions (404/410 from FCM) are automatically cleaned up.
+</div>
+
+<div class="finding info">
+  <strong>9. IndexedDB binding storage</strong><br/>
+  Device bindings are stored in IndexedDB as a backup for when TWA clears localStorage on exit. IndexedDB is origin-scoped and persists across app restarts. This is not a security concern but means a factory reset or app data clear is required to fully remove a binding.
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RECOMMENDED ACTIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card">
+<h2><span class="dot amber"></span> Recommended Actions</h2>
+<div class="grid-2">
+  <div>
+    <p class="section-label">Before Pilot</p>
+    <ul>
+      <li>Lock down Firestore rules: residents can only read/write their own checkin doc; staff can read/write for their home; admin-only for staff/homes collections.</li>
+      <li>Add Firebase Auth for resident operations (anonymous auth or custom tokens tied to device binding).</li>
+      <li>Audit Vercel env var visibility (Production vs Preview).</li>
+      <li>Verify CRON_SECRET is not guessable.</li>
+    </ul>
+  </div>
+  <div>
+    <p class="section-label">Nice to Have</p>
+    <ul>
+      <li>Add certificate pinning for the TWA (Android Network Security Config).</li>
+      <li>Implement Content Security Policy headers.</li>
+      <li>Add rate limiting on serverless functions.</li>
+      <li>Set up Firebase App Check to prevent unauthorized API calls.</li>
+      <li>Add audit logging for admin actions.</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<p class="footer">ElderWatch Security Overview · Generated 2026-09-17 · elderwatch-14712</p>
+</body>
+</html>
