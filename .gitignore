@@ -9,3 +9,4 @@ coverage/
 service-account.json
 data/
 .vercel
+bubblewrap-project/.gradle/

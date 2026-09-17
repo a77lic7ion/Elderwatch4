@@ -20,6 +20,7 @@ export default function App() {
       const path = window.location.pathname;
       if (path.startsWith('/checkin')) return 'checkin';
       if (path.startsWith('/link')) return 'link';
+      if (path === '/admin') return 'admin';
 
       // If the device is already paired, go straight to check-in
       const binding = localStorage.getItem('elderwatch_device_binding');
@@ -43,8 +44,14 @@ export default function App() {
           return 'checkin';
         }
       }
+      // PWA/APK launch: if we're in standalone mode and have no binding yet,
+      // go straight to the pairing-code screen — never land on the admin panel.
+      // NOTE: '/' is the RESIDENT entry point. Staff open /admin explicitly.
+      if (isPWA) return 'link';
     }
-    return 'admin';
+    // No binding, not PWA, path is '/' — resident flow (pairing screen)
+    // Staff who want the admin panel must navigate to /admin or log in.
+    return 'link';
   });
 
   // Link code parameter if navigating to /link?code=XYZ
@@ -167,8 +174,26 @@ export default function App() {
         setPermanentResidentId(match ? match[1] : null);
         // Save for PWA restore
         localStorage.setItem('ew_pwa_checkin_url', path);
-      } else {
+      } else if (path === '/admin') {
+        // /admin is staff-only — show login or admin panel depending on session
         setCurrentRoute('admin');
+      } else {
+        // Any other path (including '/'): resident flow.
+        // Check device binding — if bound, go to check-in; otherwise pairing screen.
+        const binding = localStorage.getItem('elderwatch_device_binding');
+        if (binding) {
+          try {
+            const parsed = JSON.parse(binding);
+            if (parsed.residentId) {
+              const checkinUrl = `/checkin/${parsed.residentId}`;
+              window.history.replaceState({}, '', checkinUrl);
+              setPermanentResidentId(parsed.residentId);
+              setCurrentRoute('checkin');
+              return;
+            }
+          } catch { /* ignore corrupt binding */ }
+        }
+        setCurrentRoute('link');
       }
     };
 

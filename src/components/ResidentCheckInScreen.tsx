@@ -223,12 +223,12 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
             const { doc, getDoc } = await import('firebase/firestore');
             const sastNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
             const today = sastNow.toISOString().split('T')[0];
-            const docId = `${deviceBinding.homeId}_${deviceBinding.residentId}_${today}`;
+            const docId = `${parsed.homeId}_${parsed.residentId}_${today}`;
             const snap = await getDoc(doc(db, 'checkins', docId));
             if (snap.exists()) {
               const data = snap.data();
               localStorage.setItem(
-                `elderwatch_checkin_${deviceBinding.residentId}_${today}`,
+                `elderwatch_checkin_${parsed.residentId}_${today}`,
                 JSON.stringify({ status: data.status, timestamp: data.timestamp })
               );
               if (data.status === 'ok') { setView('ok'); setCheckInTime(new Date(data.timestamp)); langChosenRef.current = true; }
@@ -239,9 +239,10 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         readFromFirestore();
 
         // If no language has been chosen yet, prompt for it now.
-        // (localStorage에 저장된 값이 없을 때만 언어 선택 화면을 보인다.
-        //  savedLang 기본값은 'en'이므로 !savedLang로는 판단할 수 없다.)
-        if (!localStorage.getItem('ew_lang') && view !== 'ok' && view !== 'help') {
+        // Use existingCheckin (already read above) instead of view state,
+        // because setView() is async and view still reads 'morning' here.
+        const alreadyCheckedIn = existingCheckin && (JSON.parse(existingCheckin).status === 'ok' || JSON.parse(existingCheckin).status === 'not_ok');
+        if (!localStorage.getItem('ew_lang') && !alreadyCheckedIn) {
           setView('lang_select');
         }
       }

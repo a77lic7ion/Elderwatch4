@@ -36,7 +36,7 @@ import { ResidentTodayView, Home, StaffUser, JobExecutionLog, PushNotificationRe
 import { playEmergencyAlertSound } from '../utils/audioAlert';
 import { AddEditResidentModal } from './AddEditResidentModal';
 import { ResidentDetailModal } from './ResidentDetailModal';
-import { DeviceLinkQRModal } from './DeviceLinkQRModal';
+import { DeviceLinkCodeModal } from './DeviceLinkCodeModal';
 import { LegalFooter } from './LegalFooter';
 import { MarkAwayModal } from './MarkAwayModal';
 
@@ -62,7 +62,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   user,
   initialHome,
   onLogout,
-  onSimulateDeviceBind,
 }) => {
   const [isNight] = useAppTheme();
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'residents' | 'settings' | 'reports'>(
@@ -1896,15 +1895,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       )}
 
       {selectedResidentForQR && (
-        <DeviceLinkQRModal
+        <DeviceLinkCodeModal
           resident={selectedResidentForQR}
-          token={token}
           onClose={() => setSelectedResidentForQR(null)}
           onCodeRegenerated={fetchResidents}
-          onSimulateDeviceBind={(code) => {
-            setSelectedResidentForQR(null);
-            onSimulateDeviceBind(code);
-          }}
         />
       )}
 
