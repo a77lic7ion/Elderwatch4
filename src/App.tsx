@@ -20,7 +20,6 @@ export default function App() {
       const path = window.location.pathname;
       if (path.startsWith('/checkin')) return 'checkin';
       if (path.startsWith('/link')) return 'link';
-      if (path === '/admin') return 'admin';
 
       // If the device is already paired, go straight to check-in
       const binding = localStorage.getItem('elderwatch_device_binding');
@@ -33,6 +32,13 @@ export default function App() {
             return 'checkin';
           }
         } catch { /* ignore corrupt binding */ }
+      }
+
+      // Resident APK (PWA/TWA): NEVER show admin — always go to link or checkin
+      // Only the web browser at /admin should show the admin panel.
+      if (path === '/admin') {
+        if (isPWA) return 'link';
+        return 'admin';
       }
 
       // PWA launch: check if we have a saved resident check-in URL
