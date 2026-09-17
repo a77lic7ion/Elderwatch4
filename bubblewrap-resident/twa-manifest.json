@@ -1,0 +1,48 @@
+{
+  "packageId": "com.elderwatch.resident",
+  "host": "elderwatch-resident.vercel.app",
+  "name": "ElderWatch Resident",
+  "launcherName": "ElderWatch",
+  "display": "standalone",
+  "themeColor": "#121815",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#121815",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://elderwatch-resident.vercel.app/elderwatch-logo.png",
+  "splashScreenFadeOutDuration": 0,
+  "signingKey": {
+    "path": "../elderwatch4.jks",
+    "alias": "Shaun",
+    "password": "B33tl3sL1lly@123",
+    "keyPassword": "B33tl3sL1lly@123"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 2,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 21,
+  "shareTarget": {
+    "action": "share",
+    "method": "nj",
+    "class": "com.google.androidbrowserhelper.trusted.TrustedWebActivityIntent"
+  },
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}
