@@ -368,6 +368,18 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
     }
   };
 
+  const handleDisableReminders = async () => {
+    if (!deviceBinding || reminderBusy) return;
+    setReminderBusy(true);
+    try {
+      const { disableReminders } = await import('../lib/push');
+      await disableReminders(deviceBinding.residentId);
+      setReminderState('off');
+    } finally {
+      setReminderBusy(false);
+    }
+  };
+
   // Shown only when reminders can still be switched on from this screen.
   const reminderHint =
     reminderState === 'off'
@@ -827,7 +839,7 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         {/* Reminder bell + language toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            onClick={reminderCanBeEnabled ? handleEnableReminders : undefined}
+            onClick={reminderState === 'on' ? handleDisableReminders : (reminderCanBeEnabled ? handleEnableReminders : undefined)}
             aria-label={`Daily reminders ${reminderState === 'on' ? 'on' : 'off'}`}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -835,7 +847,8 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
               background: reminderState === 'on' ? '#157A4C' : 'rgba(255,255,255,0.1)',
               color: reminderState === 'on' ? 'white' : 'rgba(255,255,255,0.7)',
               fontSize: '13px', fontWeight: 700,
-              cursor: reminderCanBeEnabled ? 'pointer' : 'default'
+              cursor: (reminderState === 'on' || reminderCanBeEnabled) ? 'pointer' : 'default',
+              opacity: reminderBusy ? 0.6 : 1
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
