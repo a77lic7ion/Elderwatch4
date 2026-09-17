@@ -92,6 +92,14 @@ export default function App() {
   const [staffUser, setStaffUser] = useState<StaffUser | null>(null);
   const [staffHome, setStaffHome] = useState<Home | null>(null);
 
+  // Tracks whether we're still verifying the device binding against the server.
+  // While true, nothing renders — prevents a flash of the check-in screen for
+  // devices whose pairing code was rotated by staff.
+  const [bindingVerified, setBindingVerified] = useState(() => {
+    // If there's no binding, nothing to verify — go ahead immediately.
+    return !localStorage.getItem('elderwatch_device_binding');
+  });
+
   // Restore staff session if present (sessionStorage = per-tab sessions)
   // Each browser tab has its own isolated Firebase Auth instance (inMemoryPersistence)
   // so multiple users can be signed in simultaneously in different tabs.
@@ -99,6 +107,37 @@ export default function App() {
   // — this is what makes the APK show the code-entry screen on first open.
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Verify device binding against the server BEFORE rendering anything.
+    // If admin rotated the pairing code (isDeviceLinked: false), clear all
+    // local state and go straight to the link screen.
+    const verifyBinding = async () => {
+      const bindingRaw = localStorage.getItem('elderwatch_device_binding');
+      if (bindingRaw) {
+        try {
+          const binding = JSON.parse(bindingRaw);
+          if (binding.residentId) {
+            const { db } = await import('./lib/firebase');
+            const { doc, getDoc } = await import('firebase/firestore');
+            const snap = await getDoc(doc(db, 'residents', binding.residentId));
+            if (!snap.exists() || !snap.data().isDeviceLinked) {
+              console.warn('[ElderWatch] Binding invalid on server — going to link screen');
+              localStorage.removeItem('elderwatch_device_binding');
+              localStorage.removeItem('ew_lang');
+              localStorage.removeItem('ew_pwa_checkin_url');
+              window.history.replaceState({}, '', '/link');
+              setCurrentRoute('link');
+              setBindingVerified(true);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('[ElderWatch] Binding verification failed:', e);
+        }
+      }
+      setBindingVerified(true);
+    };
+    verifyBinding();
     // Restore staff session on mount
     try {
       const savedAuth = sessionStorage.getItem('elderwatch_staff_auth');
@@ -245,6 +284,11 @@ export default function App() {
   };
 
   const [isNight] = useAppTheme();
+
+  // While binding is being verified against the server, render nothing.
+  // This prevents a flash of the check-in screen for devices whose
+  // pairing code was rotated by staff.
+  if (!bindingVerified) return null;
 
   return (
     <div
