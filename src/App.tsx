@@ -10,19 +10,28 @@ import { auth, logout, onAuthChange } from './lib/firebase';
 import { loadBinding } from './lib/device-storage';
 
 export default function App() {
-  const isPWA = typeof window !== 'undefined' && 
-    (window.matchMedia('(display-mode: standalone)').matches || 
+  const isPWA = typeof window !== 'undefined' &&
+    (window.matchMedia('(display-mode: standalone)').matches ||
      (window.navigator as any).standalone === true);
 
-  // Simple route from localStorage — no async, no server checks.
-  // ResidentCheckInScreen handles server verification internally.
   const [currentRoute, setCurrentRoute] = useState<'admin' | 'checkin' | 'link'>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
 
+      // ---- STAFF WEB APP (browser, not PWA) ----
+      // The admin panel lives at /admin. The browser root / also goes to admin.
+      // The staff web app NEVER checks device bindings or resident state.
+      if (!isPWA) {
+        return 'admin';
+      }
+
+      // ---- RESIDENT APP (PWA/TWA only) ----
       // Explicit routes
       if (path.startsWith('/checkin')) return 'checkin';
       if (path.startsWith('/link')) return 'link';
+
+      // /admin in a PWA context = redirect to link (resident app should never show admin)
+      if (path === '/admin') return 'link';
 
       // If device is paired, go to check-in
       const binding = localStorage.getItem('elderwatch_device_binding');
@@ -35,10 +44,10 @@ export default function App() {
             localStorage.setItem('ew_pwa_checkin_url', checkinUrl);
             return 'checkin';
           }
-        } catch { /* corrupt binding — fall through to link */ }
+        } catch {}
       }
 
-      // Also check sessionStorage (backup for TWA localStorage clearing)
+      // Check sessionStorage backup
       const sessionBinding = sessionStorage.getItem('elderwatch_device_binding');
       if (sessionBinding) {
         try {
@@ -53,21 +62,18 @@ export default function App() {
         } catch {}
       }
 
-      // /admin is for the staff web app only — resident APK is on a different origin
-      if (path === '/admin') {
-        return 'admin';
-      }
-
       // Restore saved check-in URL if binding exists
       const savedUrl = localStorage.getItem('ew_pwa_checkin_url');
       if (savedUrl && localStorage.getItem('elderwatch_device_binding')) {
         window.history.replaceState({}, '', savedUrl);
         return 'checkin';
       }
+
+      // No binding found — show pairing screen
+      return 'link';
     }
-    // In a browser (not PWA/TWA), root goes to admin login
-    if (!isPWA) return 'admin';
-    return 'link';
+    // SSR fallback
+    return isPWA ? 'link' : 'admin';
   });
 
   const [linkCodeParam, setLinkCodeParam] = useState<string>(() => {
@@ -97,7 +103,7 @@ export default function App() {
 
   // If localStorage was cleared by TWA, restore binding from IndexedDB
   useEffect(() => {
-    if (currentRoute === 'link' && !localStorage.getItem('elderwatch_device_binding')) {
+    if (isPWA && currentRoute === 'link' && !localStorage.getItem('elderwatch_device_binding')) {
       loadBinding().then((binding) => {
         if (binding && binding.residentId) {
           localStorage.setItem('elderwatch_device_binding', JSON.stringify(binding));
@@ -116,78 +122,56 @@ export default function App() {
 
   // Restore staff session
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const savedAuth = sessionStorage.getItem('elderwatch_staff_auth');
-      if (savedAuth) {
-        const { token, user, home } = JSON.parse(savedAuth);
-        setStaffToken(token);
-        setStaffUser(user);
-        setStaffHome(home);
-      }
-    } catch (e) {
-      console.error('Failed to restore session:', e);
+    const saved = sessionStorage.getItem('elderwatch_staff_auth');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.token && parsed.user && parsed.home) {
+          setStaffToken(parsed.token);
+          setStaffUser(parsed.user);
+          setStaffHome(parsed.home);
+        }
+      } catch {}
     }
-
-    const unsubscribe = onAuthChange((firebaseUser) => {
-      if (!firebaseUser) {
-        setStaffToken(null);
-        setStaffUser(null);
-        setStaffHome(null);
-        sessionStorage.removeItem('elderwatch_staff_auth');
-      }
-    });
-
-    return () => unsubscribe();
   }, []);
 
-  // Listen for browser back/forward
+  // Popstate handler — browser back/forward buttons
   useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      const params = new URLSearchParams(window.location.search);
-      if (path.startsWith('/link')) {
-        setCurrentRoute('link');
-        setLinkCodeParam(params.get('code') || '');
-      } else if (path.startsWith('/checkin')) {
-        setCurrentRoute('checkin');
-        const match = path.match(/^\/checkin\/(.+)$/);
-        setPermanentResidentId(match ? match[1] : null);
-        if (match) localStorage.setItem('ew_pwa_checkin_url', path);
-      } else if (path === '/admin' && !isPWA) {
+    const handler = () => {
+      if (!isPWA) {
+        // Staff web app: always stay on admin
         setCurrentRoute('admin');
-      } else {
-        // Default: check binding
-        const binding = localStorage.getItem('elderwatch_device_binding');
-        if (binding) {
-          try {
-            const parsed = JSON.parse(binding);
-            if (parsed.residentId) {
-              const checkinUrl = `/checkin/${parsed.residentId}`;
-              window.history.replaceState({}, '', checkinUrl);
-              setPermanentResidentId(parsed.residentId);
-              setCurrentRoute('checkin');
-              return;
-            }
-          } catch {}
-        }
-        setCurrentRoute('link');
+        return;
       }
+      // Resident app: read from localStorage
+      const binding = localStorage.getItem('elderwatch_device_binding');
+      if (binding) {
+        try {
+          const parsed = JSON.parse(binding);
+          if (parsed.residentId) {
+            setCurrentRoute('checkin');
+            return;
+          }
+        } catch {}
+      }
+      setCurrentRoute('link');
     };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
   }, [isPWA]);
 
   const navigate = (route: 'admin' | 'checkin' | 'link', code?: string) => {
-    setCurrentRoute(route);
-    let path = '/admin';
-    if (route === 'checkin') path = '/checkin';
-    if (route === 'link') {
+    let path = '/';
+    if (route === 'admin') path = '/admin';
+    else if (route === 'checkin') {
+      const id = permanentResidentId || 'new';
+      path = `/checkin/${id}`;
+    } else if (route === 'link') {
       path = code ? `/link?code=${encodeURIComponent(code)}` : '/link';
-      if (code) setLinkCodeParam(code);
     }
     window.history.pushState({}, '', path);
+    setCurrentRoute(route);
+    if (code) setLinkCodeParam(code);
   };
 
   const handleLoginSuccess = (token: string, user: StaffUser, home: Home) => {
@@ -198,15 +182,15 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await logout();
+    try { await logout(); } catch {}
     setStaffToken(null);
     setStaffUser(null);
     setStaffHome(null);
     sessionStorage.removeItem('elderwatch_staff_auth');
+    navigate('admin');
   };
 
   const handleLinkedSuccess = (binding: DeviceBinding) => {
-    console.log('Successfully paired device for:', binding.residentName);
     const checkinUrl = `/checkin/${binding.residentId}`;
     window.history.replaceState({}, '', checkinUrl);
     localStorage.setItem('ew_pwa_checkin_url', checkinUrl);
