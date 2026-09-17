@@ -152,11 +152,6 @@ export const DeviceLinkScreen: React.FC<DeviceLinkScreenProps> = ({
             <p className="text-xs text-slate-400">ElderWatch Resident Setup</p>
           </div>
         </div>
-        {onCancel && (
-          <button onClick={onCancel} className="text-xs text-slate-400 hover:text-white transition px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800">
-            Cancel
-          </button>
-        )}
       </div>
 
       {/* Main Container */}
