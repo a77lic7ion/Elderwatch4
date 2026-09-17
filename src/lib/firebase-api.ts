@@ -318,7 +318,7 @@ export async function fetchAllHomes() {
 }
 
 // Regenerate Link Code for a resident
-export async function regenerateLinkCode(residentId: string, roomNumber: string) {
+export async function regenerateLinkCode(residentId: string, roomNumber: string, homeId?: string) {
   const newCode = `LINK-${roomNumber.replace(/[^a-zA-Z0-9]/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
   await setDoc(doc(db, 'residents', residentId), {
     oneTimeLinkCode: newCode,
@@ -326,6 +326,23 @@ export async function regenerateLinkCode(residentId: string, roomNumber: string)
     isDeviceLinked: false,
     linkedAt: null,
   }, { merge: true });
+
+  // Also reset today's check-in status so the resident shows as "not checked in"
+  if (homeId) {
+    const sastNow = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+    const today = sastNow.toISOString().split('T')[0];
+    const docId = `${homeId}_${residentId}_${today}`;
+    try {
+      await setDoc(doc(db, 'checkins', docId), {
+        status: 'awaiting',
+        timestamp: new Date().toISOString(),
+        updatedBy: 'admin-rotate',
+      }, { merge: true });
+    } catch (e) {
+      console.error('[ElderWatch] Failed to reset checkin status:', e);
+    }
+  }
+
   return newCode;
 }
 

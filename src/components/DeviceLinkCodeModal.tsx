@@ -26,7 +26,7 @@ export const DeviceLinkCodeModal: React.FC<DeviceLinkCodeModalProps> = ({
     (async () => {
       try {
         const { regenerateLinkCode } = await import('../lib/firebase-api');
-        const newCode = await regenerateLinkCode(resident.id, resident.roomNumber);
+        const newCode = await regenerateLinkCode(resident.id, resident.roomNumber, resident.homeId);
         if (cancelled) return;
         setCurrentCode(newCode);
         onCodeRegenerated();
@@ -51,7 +51,7 @@ export const DeviceLinkCodeModal: React.FC<DeviceLinkCodeModalProps> = ({
     setRegenerating(true);
     try {
       const { regenerateLinkCode } = await import('../lib/firebase-api');
-      const newCode = await regenerateLinkCode(resident.id, resident.roomNumber);
+      const newCode = await regenerateLinkCode(resident.id, resident.roomNumber, resident.homeId);
       setCurrentCode(newCode);
       onCodeRegenerated();
     } catch (err) {

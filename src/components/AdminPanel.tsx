@@ -570,11 +570,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   // Manual rotation (kept for compatibility with batch operations)
-  const handleRotateLinkCode = async (residentId: string, roomNumber: string, residentName: string) => {
+  const handleRotateLinkCode = async (residentId: string, roomNumber: string, residentName: string, homeId: string) => {
     if (!confirm(`Rotate pairing code for "${residentName}"? The old code will stop working immediately.`)) return;
     try {
       const { regenerateLinkCode } = await import('../lib/firebase-api');
-      await regenerateLinkCode(residentId, roomNumber);
+      await regenerateLinkCode(residentId, roomNumber, homeId);
       fetchResidents();
     } catch (err) {
        alert('Failed to rotate pairing code: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -1593,7 +1593,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <Key className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleRotateLinkCode(r.id, r.roomNumber, r.name)}
+                            onClick={() => handleRotateLinkCode(r.id, r.roomNumber, r.name, r.homeId)}
                             className={`p-1.5 rounded-lg border transition cursor-pointer ${isNight ? 'border-slate-700 hover:bg-amber-950/50 text-amber-400' : 'border-slate-200 hover:bg-amber-50 text-amber-600'}`}
                             title="Rotate Pairing Code (invalidates old code)"
                           >

@@ -121,12 +121,10 @@ export default function App() {
             const { doc, getDoc } = await import('firebase/firestore');
             const snap = await getDoc(doc(db, 'residents', binding.residentId));
             if (!snap.exists() || !snap.data().isDeviceLinked) {
-              console.warn('[ElderWatch] Binding invalid on server — going to link screen');
-              localStorage.removeItem('elderwatch_device_binding');
-              localStorage.removeItem('ew_lang');
-              localStorage.removeItem('ew_pwa_checkin_url');
-              window.history.replaceState({}, '', '/link');
-              setCurrentRoute('link');
+              console.warn('[ElderWatch] Binding invalid on server — resident screen will show unpaired');
+              // Don't clear localStorage here — keep the binding so ResidentCheckInScreen
+              // can show the unpaired screen with cache-clear instructions.
+              // localStorage will be cleared when the user clears the app cache.
               setBindingVerified(true);
               return;
             }

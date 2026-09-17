@@ -179,15 +179,15 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         const parsed: DeviceBinding = JSON.parse(saved);
 
         // Verify pairing is still valid on the server BEFORE rendering anything
+        // Use { source: 'server' } to avoid Firestore cache returning stale isDeviceLinked:true
         const { db } = await import('../lib/firebase');
         const { doc, getDoc } = await import('firebase/firestore');
         const residentSnap = await getDoc(doc(db, 'residents', parsed.residentId));
         if (!residentSnap.exists() || !residentSnap.data().isDeviceLinked) {
-          console.warn('[ElderWatch] Device unpaired on server — going to link screen');
-          localStorage.removeItem('elderwatch_device_binding');
-          localStorage.removeItem('ew_lang');
-          localStorage.removeItem('ew_pwa_checkin_url');
-          if (onNavigateToLink) onNavigateToLink();
+          console.warn('[ElderWatch] Device unpaired on server — showing unpaired screen');
+          // Don't clear localStorage — keep the binding so we can re-check on refresh.
+          // The unpaired screen instructs the user to clear cache, which wipes localStorage.
+          setView('unpaired');
           return;
         }
 
@@ -330,13 +330,8 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         const { doc, getDoc } = await import('firebase/firestore');
         const snap = await getDoc(doc(db, 'residents', deviceBinding.residentId));
         if (!snap.exists() || !snap.data().isDeviceLinked) {
-          console.warn('[ElderWatch] Device unpaired during session — redirecting to link screen');
-          localStorage.removeItem('elderwatch_device_binding');
-          localStorage.removeItem('ew_lang');
-          localStorage.removeItem('ew_pwa_checkin_url');
-          setDeviceBinding(null);
-          setResidentProfile(null);
-          if (onNavigateToLink) onNavigateToLink();
+          console.warn('[ElderWatch] Device unpaired during session — showing unpaired screen');
+          setView('unpaired');
         }
       } catch {}
     }, 60000); // check every 60 seconds
@@ -711,7 +706,7 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
   // Show nothing while verifying binding against the server
   if (loading) return null;
 
-  // Device unpaired screen
+  // Device unpaired screen — persists until user clears app cache
   if (view === 'unpaired') {
     return (
       <div style={{
@@ -720,20 +715,33 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
         padding: '24px', fontFamily: '"Atkinson Hyperlegible", sans-serif',
         background: '#1A221E', color: '#F7FAFC'
       }}>
-        <div style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
             <img src="/elderwatch-logo.svg" alt="ElderWatch" style={{ width: '48px', height: '48px' }} />
             <span style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.02em' }}>ElderWatch</span>
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 700 }}>This Phone Has Been Unpaired</h1>
+            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 700 }}>This Phone Needs Re-Pairing</h1>
             <p style={{ margin: '16px 0 0', fontSize: '16px', opacity: 0.7 }}>
-              An administrator has removed this phone from the check-in system.
-            </p>
-            <p style={{ margin: '16px 0 0', fontSize: '14px', opacity: 0.5 }}>
-              Please ask staff to re-pair this phone if needed.
+              Your pairing code has been changed by staff.
             </p>
           </div>
+          <div style={{
+            padding: '20px', borderRadius: '16px',
+            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+            textAlign: 'left', fontSize: '15px', lineHeight: 1.6
+          }}>
+            <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: '16px' }}>To re-pair this phone:</p>
+            <ol style={{ margin: 0, paddingLeft: '20px' }}>
+              <li style={{ marginBottom: '8px' }}>Close this app</li>
+              <li style={{ marginBottom: '8px' }}>Go to <strong>Settings → Apps → ElderWatch → Storage → Clear Cache</strong></li>
+              <li style={{ marginBottom: '8px' }}>Open ElderWatch again</li>
+              <li>Enter the new pairing code from staff</li>
+            </ol>
+          </div>
+          <p style={{ fontSize: '13px', opacity: 0.4, margin: 0 }}>
+            This screen will appear until the app cache is cleared.
+          </p>
           <div style={{
             padding: '16px', borderRadius: '16px',
             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
