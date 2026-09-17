@@ -278,6 +278,8 @@ export default function App() {
     console.log('Successfully paired device for:', binding.residentName);
     const checkinUrl = `/checkin/${binding.residentId}`;
     window.history.replaceState({}, '', checkinUrl);
+    localStorage.setItem('ew_pwa_checkin_url', checkinUrl);
+    localStorage.setItem('ew_lang', 'en');
     setPermanentResidentId(binding.residentId);
     setCurrentRoute('checkin');
   };

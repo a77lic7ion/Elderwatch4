@@ -528,14 +528,19 @@ export const ResidentCheckInScreen: React.FC<ResidentCheckInScreenProps> = ({
     const existing = localStorage.getItem('elderwatch_device_binding');
     const urlParams = new URLSearchParams(window.location.search);
     const hasPairCode = !!urlParams.get('pair');
-    if (!existing || JSON.parse(existing).residentId !== permanentResidentId || hasPairCode) {
+
+    // If already bound to this resident and no new pair code, skip autoBind entirely.
+    // The load effect handles everything else.
+    let existingBinding: any = null;
+    if (existing) {
+      try { existingBinding = JSON.parse(existing); } catch {}
+    }
+    const alreadyBound = existingBinding && existingBinding.residentId === permanentResidentId;
+
+    if (!alreadyBound || hasPairCode) {
       // Always run when there's a ?pair= code, even if already bound,
       // to make sure the new device gets linked properly.
       autoBind();
-    } else {
-      // Already bound, check language
-      const savedLang = localStorage.getItem('ew_lang');
-      if (!savedLang) setView('lang_select');
     }
   }, [permanentResidentId]);
 
